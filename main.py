@@ -12,102 +12,29 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning,)
+warnings.filterwarnings("ignore", category=RuntimeWarning,)
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 pd.options.mode.chained_assignment = None
 
-data = pd.read_csv('iowaHomes.csv')
-
-
-dropped_attribs = ["Id", "Alley", "PoolArea",
-                   "MoSold", "3SsnPorch", "BsmtFinSF2",
-                   "BsmtHalfBath", "MiscVal", "LowQualFinSF",
-                   "YrSold", "OverallCond", "ScreenPorch"]
-
-data = data.drop(columns=dropped_attribs)
-data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
-
-
-
-
-# data = factorize_data(data)
-# data = data.drop(columns=['SalePrice'])
-# Q1 = data.quantile(0.25)
-# Q3 = data.quantile(0.75)
-# IQR = Q3 - Q1
-# print(IQR)
-# print(data.shape)
-# data = data[~((data < (Q1 - 1.5 * IQR)) |(data > (Q3 + 1.5 * IQR))).any(axis=1)]
-# print(data.shape)
-# exit()
+# class DropLowUniqueCols(BaseEstimator, TransformerMixin):
+#     def __init__(self, threshold):
+#         self.threshold = threshold
+#         pass
 #
-# print(data['EnclosedPorch'].value_counts())
-# print(data.describe())
-# print(data.shape)
-# print(math.sqrt(data.shape[0]))
-
-# import matplotlib.pyplot as plt
-# for column in data:
-#     plt.figure()
-#     data.boxplot([column])
-#     plt.savefig('plots/boxplot_' + str(column) + '.png')
-
-
+#     def fit(self, X, y=None):
+#         return self
 #
-# for x in range(data.shape[1]):
-#     col = data.iloc[:,x]
-#     if len(col.unique()) < 5:
-#         print(col.value_counts())
-# print(data)
+#     def transform(self, X, y=None):
+#         for x in range(data.shape[1]):
+#             col = X.iloc[:, x]
+#             if len(col.unique()) < self.threshold:
+#                 print(col.value_counts())
 
-class DropLowUniqueCols(BaseEstimator, TransformerMixin):
-    def __init__(self, threshold):
-        self.threshold = threshold
-        pass
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        for x in range(data.shape[1]):
-            col = X.iloc[:, x]
-            if len(col.unique()) < self.threshold:
-                print(col.value_counts())
-
-# data = clean_data(data)
-#
-# valid_set = clean_data(valid_set)
-#
-# pred_set_id = pred_set['Id']
-# pred_set = clean_data(pred_set)
-
-#trying out different data scaling functions
-# distributions = [
-#     ('Unscaled data', "NA"),
-#     ('Data after min-max scaling',
-#         MinMaxScaler().fit_transform),
-#     ('Data after max-abs scaling',
-#         MaxAbsScaler().fit_transform),
-#     ('Data after robust scaling',
-#         RobustScaler(quantile_range=(25, 75)).fit_transform),
-#     ('Data after power transformation (Yeo-Johnson)',
-#      PowerTransformer(method='yeo-johnson').fit_transform),
-#     ('Data after power transformation (Box-Cox)',
-#      PowerTransformer().fit_transform),
-#     ('Data after quantile transformation (uniform pdf)',
-#         QuantileTransformer(output_distribution='uniform')
-#         .fit_transform),
-#     ('Data after sample-wise L2 normalizing',
-#         Normalizer().fit_transform),
-#     ('Data after standardization',
-#      StandardScaler().fit_transform)
-# ]
-
-# distributions = [
-#     (PowerTransformer(method='yeo-johnson').fit_transform),
-# ]
 
 def linear_reg(train_data, train_labels, test_data, test_labels,
                      valid_set_data, valid_set_labels,
@@ -133,25 +60,44 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
         res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
         res.to_csv("predictions.csv")
 
+
 def forest_regressor(train_data, train_labels, test_data, test_labels,
                      valid_set_data, valid_set_labels,
                      pred_set=None,pred_set_id=None):
     # random forest regressor
     from sklearn.model_selection import GridSearchCV
 
-    # param_grid = [
-    #     {'n_estimators': [50, 100, 150, 200], 'max_features': [4, 8, 32, 64], 'n_jobs': [-1]},
-    #     {'bootstrap': [False], 'n_estimators': [3, 10], 'max_features': [2, 3, 4]},
-    # ]
+    from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
+    n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
+    # Number of features to consider at every split
+    max_features = ['auto', 'sqrt']
+    # Maximum number of levels in tree
+    max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
+    max_depth.append(None)
+    # Minimum number of samples required to split a node
+    min_samples_split = [2, 5, 10]
+    # Minimum number of samples required at each leaf node
+    min_samples_leaf = [1, 2, 4]
+    # Method of selecting samples for training each tree
+    bootstrap = [True, False]  # Create the random grid
+    random_grid = {'n_estimators': n_estimators,
+                   'max_features': max_features,
+                   'max_depth': max_depth,
+                   'min_samples_split': min_samples_split,
+                   'min_samples_leaf': min_samples_leaf,
+                   'bootstrap': bootstrap}
 
     from sklearn.ensemble import RandomForestRegressor
-    reg = RandomForestRegressor(verbose=True, n_estimators=150, max_features=32, random_state=42, n_jobs=-1)
 
-    # grid_search = GridSearchCV(reg, param_grid, cv=5,scoring='r2')
-    # print(grid_search.best_estimator_)
+    reg = RandomForestRegressor(n_estimators=400, min_samples_split=2,
+                                min_samples_leaf=1, max_features='sqrt',max_depth=None,
+                                bootstrap=False,
+                                random_state=42, n_jobs=-1)
+    #rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    #rf_random.fit(train_data, train_labels)
+    #print(rf_random.best_params_)
 
     reg.fit(train_data, train_labels)
-
 
     pred = reg.predict(test_data)
     print("Test set")
@@ -166,66 +112,107 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
-        res.to_csv("predictions.csv")
+        res.to_csv("predictions.csv", index=False)
 
     ##########################################################################
 
-class PipelineAwareLabelEncoder(TransformerMixin, BaseEstimator):
-    def fit(self, X, y=None):
-        return self
 
-    def transform(self, X, y=None):
-        return OneHotEncoder().fit_transform(X).values.reshape(-1,1)
-
-def data_pipeline(d):
-    custom_cat_attribs = ['FireplaceQu', 'BsmtQual', 'BsmtCond',
+def data_pipeline(d, scale_func=None):
+    custom_cat_attribs = ['FireplaceQu', "PoolQC", 'BsmtQual', 'BsmtCond',
                           'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
                           'GarageType', 'GarageQual', 'GarageFinish',
-                          'PoolQC', 'Fence', 'MiscFeature', 'GarageCond']
-
+                          'Fence', 'MiscFeature', 'GarageCond']
     naImputer = SimpleImputer(strategy="constant", fill_value="NA")
     for att in custom_cat_attribs:
-        d[att] = naImputer.fit_transform(d[att].values.reshape(-1, 1))
+        try:
+            d[att] = naImputer.fit_transform(d[att].values.reshape(-1, 1))
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
+        continue
 
     cat_attribs = list(d.select_dtypes(include=[np.object]).columns)
     freqImputer = SimpleImputer(strategy="most_frequent")
     for att in cat_attribs:
-        d[att] = freqImputer.fit_transform(d[att].values.reshape(-1, 1))
+        try:
+            d[att] = freqImputer.fit_transform(d[att].values.reshape(-1, 1))
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
+        continue
 
     num_attribs = list(d.select_dtypes(include=[np.number]).columns)
     numImputer = SimpleImputer(strategy="median")
     for att in num_attribs:
-        d[att] = numImputer.fit_transform(d[att].values.reshape(-1, 1))
+        try:
+            d[att] = numImputer.fit_transform(d[att].values.reshape(-1, 1))
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
+        continue
+
+    scale_attribs = list(d.select_dtypes(include=[np.number]).columns)
+    scale_func = RobustScaler()
+    if scale_func is not None:
+        for att in scale_attribs:
+            try:
+                d[att] = scale_func.fit_transform(d[att].values.reshape(-1, 1))
+            except KeyError:
+                print("Warning, KeyError, attrib not found in data")
+            continue
 
     factorization_attribs = ['MSSubClass', 'MSZoning', 'Street',
-                             'LotShape', 'LandContour', 'Utilities',
-                             'LotConfig', 'LandSlope', 'Neighborhood',
+                             'LotShape',  'Utilities','LandContour', 'LandSlope','Heating',
+                             'LotConfig',  'Neighborhood',
                              'Condition1', 'Condition2', 'BldgType',
                              'HouseStyle', 'RoofStyle', 'RoofMatl',
                              'Exterior1st', 'Exterior2nd', 'MasVnrType',
                              'ExterQual', 'ExterCond', 'Foundation',
                              'BsmtQual', 'BsmtCond', 'BsmtExposure',
-                             'BsmtFinType1', 'BsmtFinType2', 'Heating',
-                             'HeatingQC', 'CentralAir', 'Electrical',
-                             'KitchenQual', 'Functional', 'FireplaceQu',
+                             'BsmtFinType1', 'BsmtFinType2',
+                              'CentralAir','HeatingQC','Electrical','KitchenQual',
+                              'Functional', 'FireplaceQu',
                              'GarageType', 'GarageFinish', 'GarageQual',
                              'GarageCond', 'PavedDrive', 'PoolQC',
                              'Fence', 'MiscFeature', 'SaleType',
                              'SaleCondition'
                              ]
-    #enc = OneHotEncoder()
+    factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
+
+    # #enc = LabelEncoder()
+    # #enc = MultiLabelBinarizer()
     enc = OrdinalEncoder()
     for att in factorization_attribs:
-        temp = d[att].values.reshape(-1, 1)
-        xf = enc.fit(temp)
-        d[att] = xf.transform(temp)
-
+        try:
+            d[att] = enc.fit_transform(d[att].values.reshape(-1, 1))
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
+        continue
     return d
 
+
 def main():
+    distributions = [
+        ('Unscaled data', None),
+        ('Data after min-max scaling',
+         MinMaxScaler().fit_transform),
+        ('Data after max-abs scaling',
+         MaxAbsScaler().fit_transform),
+        ('Data after robust scaling',
+         RobustScaler(quantile_range=(25, 75)).fit_transform),
+        ('Data after power transformation (Yeo-Johnson)',
+         PowerTransformer(method='yeo-johnson').fit_transform),
+        ('Data after power transformation (Box-Cox)',
+         PowerTransformer().fit_transform),
+        ('Data after quantile transformation (uniform pdf)',
+         QuantileTransformer(output_distribution='uniform')
+         .fit_transform),
+        ('Data after sample-wise L2 normalizing',
+         Normalizer().fit_transform),
+        ('Data after standardization',
+         StandardScaler().fit_transform)
+    ]
 
     from sklearn.model_selection import KFold
-
+    #for dist in distributions:
+        #print(dist[0])
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
 
 
@@ -239,7 +226,6 @@ def main():
     valid_set_labels = valid_set['SalePrice']
     valid_set_data = valid_set.drop(columns='SalePrice')
 
-
     train_data = data_pipeline(train_data)
     test_data = data_pipeline(test_data)
     valid_set_data = data_pipeline(valid_set_data)
@@ -249,41 +235,123 @@ def main():
     pred_set = pred_set.drop(columns=dropped_attribs)
     pred_set = data_pipeline(pred_set)
 
-    forest_regressor(train_data, train_labels, test_data, test_labels,
-                     #valid_set_data,valid_set_labels,pred_set,pred_set_id)
+    from sklearn import linear_model
+    from regressors import stats
+    #ols = linear_model.LinearRegression()
+    #ols.fit(train_data, train_labels)
 
-    #linear_reg(train_data, train_labels, test_data, test_labels,
-                     #valid_set_data,valid_set_labels,pred_set,pred_set_id)
-    exit()
+    #print(stats.summary(ols, train_data,train_labels, xlabels=list(train_data.columns)))
 
-    #
-    # #clean_data = prep_data(data)
-    # clean_pred_set = prep_data(pred_set)
-    # clean_valid_set = prep_data(valid_set)
-    # # kf = KFold(n_splits=10, random_state=42)
-    # # for train, test in kf.split(cleanData):
-    # #
-    # #     train_data = cleanData.drop(columns='SalePrice').iloc[train]
-    # #     train_labels = cleanData['SalePrice'].iloc[train]
-    # #
-    # #     test_data = cleanData.drop(columns='SalePrice').iloc[test]
-    # #     test_labels = cleanData['SalePrice'].iloc[test]
-    #
-    # # x = cleanData.drop(columns='SalePrice')
-    # # y = cleanData['SalePrice']
-    #
-    #
+    forest_regressor(train_data, train_labels, test_data, test_labels,valid_set_data,valid_set_labels,pred_set,pred_set_id)
+
+    #linear_reg(train_data, train_labels, test_data, test_labels,valid_set_data,valid_set_labels,pred_set,pred_set_id)
+
+
+data = pd.read_csv('iowaHomes.csv')
+
+import seaborn as sns
+sns.distplot(data['SalePrice'],color='blue',axlabel ='X')
+plt.show()
+exit()
+
+# for column in data:
+#     plt.scatter(data['SalePrice'], data[column], alpha=0.5)
+#
+#     plt.xlabel('SalePrice')
+#     plt.ylabel(column)
+#
+#
+#     plt.savefig('plots/scatterplots/scatter_' + str(column) + '.png')
+#     plt.close()
+
+# for column in data:
+#     try:
+#         plt.boxplot(data[column], labels=[column])
+#         plt.savefig('plots/boxplots/boxplot_' + str(column) + '.png')
+#         plt.close()
+#     except:
+#         pass
+
+
+dropped_attribs = ["Id", "Alley",
+                    "BsmtFinSF2",'LowQualFinSF',
+                   'ExterCond','GarageType','Electrical',
+                   'BsmtUnfSF','GarageYrBlt','BedroomAbvGr',
+                   'CentralAir','GarageArea','TotalBsmtSF',
+                   'YearRemodAdd','Foundation','YrSold',
+                   'OpenPorchSF','Fence','BsmtFinSF1',
+                   'GarageCond','HalfBath', 'Condition1',
+                   'FullBath','PavedDrive','EnclosedPorch',
+                   'BsmtHalfBath','Heating','GrLivArea',
+                   'LotShape','SaleType','HeatingQC',
+                   'LotConfig','Condition2','MiscFeature',
+                   'MoSold','GarageFinish','MasVnrType',
+                   'BldgType','MSZoning','HouseStyle',
+                   'BsmtFinType1','MasVnrArea','3SsnPorch',
+                   'SaleCondition','WoodDeckSF','GarageQual',
+                   'FireplaceQu','Street','Utilities',
+                   'MiscVal','RoofStyle',
+
+
+
+                   ]
+
+
+
+data = data.drop(columns=dropped_attribs)
+
+
+#data = data.drop(columns=["GarageCars",'YearBuilt','1stFlrSF'])
+# import seaborn as sns
+# plt.figure(figsize=(12,10))
+# cor = data.corr()
+# sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
+# plt.show()
+# #Correlation with output variable
+# cor_target = abs(cor["SalePrice"])#Selecting highly correlated features
+# relevant_features = cor_target[cor_target>0.5]
+# print(relevant_features.sort_values(ascending=False))
+#
+# #print(data[["OverallQual","1stFlrSF"]].corr())
+# #print(data[["OverallQual","TotRmsAbvGrd"]].corr())
+# #print(data[["1stFlrSF","TotRmsAbvGrd"]].corr())
+#
+
+#OverallQual #1stFlrSF SalePrice
+
+
+#exit()
+data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
+
+# data = factorize_data(data)
+# data = data.drop(columns=['SalePrice'])
+# Q1 = data.quantile(0.25)
+# Q3 = data.quantile(0.75)
+# IQR = Q3 - Q1
+# print(IQR)
+# print(data.shape)
+# data = data[~((data < (Q1 - 1.5 * IQR)) |(data > (Q3 + 1.5 * IQR))).any(axis=1)]
+# print(data.shape)
+# exit()
+#
+# print(data['EnclosedPorch'].value_counts())
+# print(data.describe())
+# print(data.shape)
+# print(math.sqrt(data.shape[0]))
+
+
+
+
+#
+# for x in range(data.shape[1]):
+#     col = data.iloc[:, x]
+#     if len(col.unique()) < 15:
+#         print(col.value_counts())
+# print(data[:19])
+#
+# exit()
 
 main()
-
-
-
-
-
-
-
-
-
 
 
 
