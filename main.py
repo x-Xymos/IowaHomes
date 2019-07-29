@@ -111,6 +111,7 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
 
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
+        v_pred = np.exp(v_pred)
         res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
         res.to_csv("predictions.csv", index=False)
 
@@ -148,34 +149,28 @@ def data_pipeline(d, scale_func=None):
             print("Warning, KeyError, attrib not found in data")
         continue
 
-    scale_attribs = list(d.select_dtypes(include=[np.number]).columns)
-    scale_func = RobustScaler()
-    if scale_func is not None:
-        for att in scale_attribs:
-            try:
-                d[att] = scale_func.fit_transform(d[att].values.reshape(-1, 1))
-            except KeyError:
-                print("Warning, KeyError, attrib not found in data")
+    scale_log_attribs = ['1stFlrSF','2ndFlrSF','BsmtFinSF1',
+                         'BsmtUnfSF','GrLivArea','LotArea',
+                         'OpenPorchSF','TotalBsmtSF','WoodDeckSF']
+    #print(d['2ndFlrSF'])
+    for att in scale_log_attribs:
+        col = d[att]
+        print(col)
+        idx = col.to_numpy().nonzero()[0]
+        print(col.iloc[idx])
+        break
+        try:
+            print('')
+            #d[att][[d[att].to_numpy().nonzero()[0]]] = d[att][[d[att].to_numpy().nonzero()[0]]].apply(np.log)
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
             continue
+    #print(d['2ndFlrSF'])
+    exit()
 
-    factorization_attribs = ['MSSubClass', 'MSZoning', 'Street',
-                             'LotShape',  'Utilities','LandContour', 'LandSlope','Heating',
-                             'LotConfig',  'Neighborhood',
-                             'Condition1', 'Condition2', 'BldgType',
-                             'HouseStyle', 'RoofStyle', 'RoofMatl',
-                             'Exterior1st', 'Exterior2nd', 'MasVnrType',
-                             'ExterQual', 'ExterCond', 'Foundation',
-                             'BsmtQual', 'BsmtCond', 'BsmtExposure',
-                             'BsmtFinType1', 'BsmtFinType2',
-                              'CentralAir','HeatingQC','Electrical','KitchenQual',
-                              'Functional', 'FireplaceQu',
-                             'GarageType', 'GarageFinish', 'GarageQual',
-                             'GarageCond', 'PavedDrive', 'PoolQC',
-                             'Fence', 'MiscFeature', 'SaleType',
-                             'SaleCondition'
-                             ]
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
-
+    factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd','YrSold',
+                                                     'MoSold','GarageYrBlt']
     # #enc = LabelEncoder()
     # #enc = MultiLabelBinarizer()
     enc = OrdinalEncoder()
@@ -189,26 +184,7 @@ def data_pipeline(d, scale_func=None):
 
 
 def main():
-    distributions = [
-        ('Unscaled data', None),
-        ('Data after min-max scaling',
-         MinMaxScaler().fit_transform),
-        ('Data after max-abs scaling',
-         MaxAbsScaler().fit_transform),
-        ('Data after robust scaling',
-         RobustScaler(quantile_range=(25, 75)).fit_transform),
-        ('Data after power transformation (Yeo-Johnson)',
-         PowerTransformer(method='yeo-johnson').fit_transform),
-        ('Data after power transformation (Box-Cox)',
-         PowerTransformer().fit_transform),
-        ('Data after quantile transformation (uniform pdf)',
-         QuantileTransformer(output_distribution='uniform')
-         .fit_transform),
-        ('Data after sample-wise L2 normalizing',
-         Normalizer().fit_transform),
-        ('Data after standardization',
-         StandardScaler().fit_transform)
-    ]
+
 
     from sklearn.model_selection import KFold
     #for dist in distributions:
@@ -217,13 +193,13 @@ def main():
 
 
 
-    train_labels = train_data['SalePrice']
+    train_labels = train_data['SalePrice'].apply(np.log)
     train_data = train_data.drop(columns='SalePrice')
 
-    test_labels = test_data['SalePrice']
+    test_labels = test_data['SalePrice'].apply(np.log)
     test_data = test_data.drop(columns='SalePrice')
 
-    valid_set_labels = valid_set['SalePrice']
+    valid_set_labels = valid_set['SalePrice'].apply(np.log)
     valid_set_data = valid_set.drop(columns='SalePrice')
 
     train_data = data_pipeline(train_data)
@@ -236,11 +212,12 @@ def main():
     pred_set = data_pipeline(pred_set)
 
     from sklearn import linear_model
-    from regressors import stats
+    #from regressors import stats
     #ols = linear_model.LinearRegression()
     #ols.fit(train_data, train_labels)
 
     #print(stats.summary(ols, train_data,train_labels, xlabels=list(train_data.columns)))
+
 
     forest_regressor(train_data, train_labels, test_data, test_labels,valid_set_data,valid_set_labels,pred_set,pred_set_id)
 
@@ -249,11 +226,32 @@ def main():
 
 data = pd.read_csv('iowaHomes.csv')
 
-import seaborn as sns
-sns.distplot(data['SalePrice'],color='blue',axlabel ='X')
-plt.show()
-exit()
+# data['SalePrice'] = data['SalePrice'].apply(np.log)
+# data['1stFlrSF'] = data['1stFlrSF'].apply(np.log)
+# data['BsmtFinSF1'] = data['BsmtFinSF1'].apply(np.log)
+#hist_BsmtFinSF1
 
+
+# import seaborn as sns
+# import matplotlib
+# sns.distplot(data['BsmtFinSF1'], color='blue', axlabel='BsmtFinSF1')
+# fig = matplotlib.pyplot.gcf()
+# fig.set_size_inches(18.5, 10.5)
+# plt.show()
+# plt.close()
+# exit()
+
+# for column in data:
+#     try:
+#         sns.distplot(data[column], color='blue', axlabel=column)
+#         fig = matplotlib.pyplot.gcf()
+#         fig.set_size_inches(18.5, 10.5)
+#         plt.savefig('plots/histograms/hist_' + str(column) + '.png',dpi=100)
+#         plt.close()
+#     except:
+#         pass
+#
+# exit()
 # for column in data:
 #     plt.scatter(data['SalePrice'], data[column], alpha=0.5)
 #
@@ -274,28 +272,8 @@ exit()
 
 
 dropped_attribs = ["Id", "Alley",
-                    "BsmtFinSF2",'LowQualFinSF',
-                   'ExterCond','GarageType','Electrical',
-                   'BsmtUnfSF','GarageYrBlt','BedroomAbvGr',
-                   'CentralAir','GarageArea','TotalBsmtSF',
-                   'YearRemodAdd','Foundation','YrSold',
-                   'OpenPorchSF','Fence','BsmtFinSF1',
-                   'GarageCond','HalfBath', 'Condition1',
-                   'FullBath','PavedDrive','EnclosedPorch',
-                   'BsmtHalfBath','Heating','GrLivArea',
-                   'LotShape','SaleType','HeatingQC',
-                   'LotConfig','Condition2','MiscFeature',
-                   'MoSold','GarageFinish','MasVnrType',
-                   'BldgType','MSZoning','HouseStyle',
-                   'BsmtFinType1','MasVnrArea','3SsnPorch',
-                   'SaleCondition','WoodDeckSF','GarageQual',
-                   'FireplaceQu','Street','Utilities',
-                   'MiscVal','RoofStyle',
-
-
-
+                    "Street",
                    ]
-
 
 
 data = data.drop(columns=dropped_attribs)
@@ -334,13 +312,6 @@ data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
 # print(data.shape)
 # exit()
 #
-# print(data['EnclosedPorch'].value_counts())
-# print(data.describe())
-# print(data.shape)
-# print(math.sqrt(data.shape[0]))
-
-
-
 
 #
 # for x in range(data.shape[1]):
@@ -353,6 +324,23 @@ data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
 
 main()
 
-
-
-
+# distributions = [
+#     ('Unscaled data', None),
+#     ('Data after min-max scaling',
+#      MinMaxScaler().fit_transform),
+#     ('Data after max-abs scaling',
+#      MaxAbsScaler().fit_transform),
+#     ('Data after robust scaling',
+#      RobustScaler(quantile_range=(25, 75)).fit_transform),
+#     ('Data after power transformation (Yeo-Johnson)',
+#      PowerTransformer(method='yeo-johnson').fit_transform),
+#     ('Data after power transformation (Box-Cox)',
+#      PowerTransformer().fit_transform),
+#     ('Data after quantile transformation (uniform pdf)',
+#      QuantileTransformer(output_distribution='uniform')
+#      .fit_transform),
+#     ('Data after sample-wise L2 normalizing',
+#      Normalizer().fit_transform),
+#     ('Data after standardization',
+#      StandardScaler().fit_transform)
+# ]
