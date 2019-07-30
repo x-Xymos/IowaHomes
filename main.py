@@ -11,33 +11,18 @@ from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
-
+import matplotlib
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning,)
-warnings.filterwarnings("ignore", category=RuntimeWarning,)
+#warnings.filterwarnings("ignore", category=UserWarning,)
+#warnings.filterwarnings("ignore", category=RuntimeWarning,)
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 pd.options.mode.chained_assignment = None
 
-# class DropLowUniqueCols(BaseEstimator, TransformerMixin):
-#     def __init__(self, threshold):
-#         self.threshold = threshold
-#         pass
-#
-#     def fit(self, X, y=None):
-#         return self
-#
-#     def transform(self, X, y=None):
-#         for x in range(data.shape[1]):
-#             col = X.iloc[:, x]
-#             if len(col.unique()) < self.threshold:
-#                 print(col.value_counts())
-
 
 def linear_reg(train_data, train_labels, test_data, test_labels,
-                     valid_set_data, valid_set_labels,
                      pred_set=None,pred_set_id=None):
 
     reg = linear_model.LinearRegression(copy_X=True, fit_intercept=True, n_jobs=-1,
@@ -46,23 +31,49 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
 
 
     pred = reg.predict(test_data)
-    print("Test set")
+    print("Linear Regression")
     print(mean_squared_log_error(test_labels, pred))
+    print(mean_squared_error(test_labels,pred))
     print(explained_variance_score(test_labels, pred))
 
-    print("Validation Set")
-    pred = reg.predict(valid_set_data)
-    print(mean_squared_log_error(valid_set_labels, pred))
-    print(explained_variance_score(valid_set_labels, pred))
+    # print("Validation Set")
+    # pred = reg.predict(valid_set_data)
+    # print(mean_squared_log_error(valid_set_labels, pred))
+    # print(explained_variance_score(valid_set_labels, pred))
 
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
-        res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
-        res.to_csv("predictions.csv")
+        v_pred = np.exp(v_pred)
+        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
+        res.to_csv("predictions.csv", index=False)
+
+def lasso(train_data, train_labels, test_data, test_labels,
+                     pred_set=None,pred_set_id=None):
+
+    reg = linear_model.Lasso(random_state=42)
+
+    reg.fit(train_data, train_labels)
+
+
+    pred = reg.predict(test_data)
+    print("Lasso")
+    print(mean_squared_log_error(test_labels, pred))
+    print(mean_squared_error(test_labels,pred))
+    print(explained_variance_score(test_labels, pred))
+
+    # print("Validation Set")
+    # pred = reg.predict(valid_set_data)
+    # print(mean_squared_log_error(valid_set_labels, pred))
+    # print(explained_variance_score(valid_set_labels, pred))
+
+    if pred_set is not None:
+        v_pred = reg.predict(pred_set)
+        v_pred = np.exp(v_pred)
+        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
+        res.to_csv("predictions.csv", index=False)
 
 
 def forest_regressor(train_data, train_labels, test_data, test_labels,
-                     valid_set_data, valid_set_labels,
                      pred_set=None,pred_set_id=None):
     # random forest regressor
     from sklearn.model_selection import GridSearchCV
@@ -88,26 +99,59 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
                    'bootstrap': bootstrap}
 
     from sklearn.ensemble import RandomForestRegressor
-
+    #reg = RandomForestRegressor()
     reg = RandomForestRegressor(n_estimators=400, min_samples_split=2,
                                 min_samples_leaf=1, max_features='sqrt',max_depth=None,
                                 bootstrap=False,
                                 random_state=42, n_jobs=-1)
-    #rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
-    #rf_random.fit(train_data, train_labels)
-    #print(rf_random.best_params_)
+
+    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    # rf_random.fit(train_data, train_labels)
+    # print(rf_random.best_params_)
 
     reg.fit(train_data, train_labels)
 
     pred = reg.predict(test_data)
-    print("Test set")
+    print("Forest Regressor")
     print(mean_squared_log_error(test_labels, pred))
+    print(mean_squared_error(test_labels, pred))
     print(explained_variance_score(test_labels, pred))
 
-    print("Validation Set")
-    pred = reg.predict(valid_set_data)
-    print(mean_squared_log_error(valid_set_labels, pred))
-    print(explained_variance_score(valid_set_labels, pred))
+    #print("Validation Set")
+    #pred = reg.predict(valid_set_data)
+    #print(mean_squared_log_error(valid_set_labels, pred))
+    #print(explained_variance_score(valid_set_labels, pred))
+
+    if pred_set is not None:
+        v_pred = reg.predict(pred_set)
+        v_pred = np.exp(v_pred)
+        res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
+        res.to_csv("predictions.csv", index=False)
+
+    ##########################################################################
+
+def ridge(train_data, train_labels, test_data, test_labels,
+                     pred_set=None,pred_set_id=None):
+
+    #reg = RandomForestRegressor()
+    reg = linear_model.RidgeCV(cv=5)
+
+    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    # rf_random.fit(train_data, train_labels)
+    # print(rf_random.best_params_)
+
+    reg.fit(train_data, train_labels)
+
+    pred = reg.predict(test_data)
+    print("RidgeCV")
+    print(mean_squared_log_error(test_labels, pred))
+    print(mean_squared_error(test_labels, pred))
+    print(explained_variance_score(test_labels, pred))
+
+    #print("Validation Set")
+    #pred = reg.predict(valid_set_data)
+    #print(mean_squared_log_error(valid_set_labels, pred))
+    #print(explained_variance_score(valid_set_labels, pred))
 
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
@@ -118,7 +162,7 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
     ##########################################################################
 
 
-def data_pipeline(d, scale_func=None):
+def data_pipeline(d):
     custom_cat_attribs = ['FireplaceQu', "PoolQC", 'BsmtQual', 'BsmtCond',
                           'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
                           'GarageType', 'GarageQual', 'GarageFinish',
@@ -149,30 +193,23 @@ def data_pipeline(d, scale_func=None):
             print("Warning, KeyError, attrib not found in data")
         continue
 
-    scale_log_attribs = ['1stFlrSF','2ndFlrSF','BsmtFinSF1',
-                         'BsmtUnfSF','GrLivArea','LotArea',
+    scale_log_attribs = ['LotFrontage','MasVnrArea','LotArea',
+                         '1stFlrSF','2ndFlrSF','BsmtFinSF1',
+                         'BsmtUnfSF','GrLivArea',
                          'OpenPorchSF','TotalBsmtSF','WoodDeckSF']
-    #print(d['2ndFlrSF'])
+
     for att in scale_log_attribs:
-        col = d[att]
-        print(col)
-        idx = col.to_numpy().nonzero()[0]
-        print(col.iloc[idx])
-        break
         try:
-            print('')
-            #d[att][[d[att].to_numpy().nonzero()[0]]] = d[att][[d[att].to_numpy().nonzero()[0]]].apply(np.log)
+            d[att] = d[att].apply(np.log)
+            d[att] = d[att].replace(-np.inf, 0)
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
             continue
-    #print(d['2ndFlrSF'])
-    exit()
+
 
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
     factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd','YrSold',
-                                                     'MoSold','GarageYrBlt']
-    # #enc = LabelEncoder()
-    # #enc = MultiLabelBinarizer()
+                                                     'MoSold','GarageYrBlt','MSSubClass']
     enc = OrdinalEncoder()
     for att in factorization_attribs:
         try:
@@ -180,99 +217,120 @@ def data_pipeline(d, scale_func=None):
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
         continue
+
+
     return d
 
 
 def main():
 
-
     from sklearn.model_selection import KFold
-    #for dist in distributions:
-        #print(dist[0])
+
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
-
-
 
     train_labels = train_data['SalePrice'].apply(np.log)
     train_data = train_data.drop(columns='SalePrice')
 
+
     test_labels = test_data['SalePrice'].apply(np.log)
     test_data = test_data.drop(columns='SalePrice')
 
-    valid_set_labels = valid_set['SalePrice'].apply(np.log)
-    valid_set_data = valid_set.drop(columns='SalePrice')
-
     train_data = data_pipeline(train_data)
     test_data = data_pipeline(test_data)
-    valid_set_data = data_pipeline(valid_set_data)
 
     pred_set = pd.read_csv('test.csv')
     pred_set_id = pred_set['Id']
     pred_set = pred_set.drop(columns=dropped_attribs)
     pred_set = data_pipeline(pred_set)
 
-    from sklearn import linear_model
-    #from regressors import stats
-    #ols = linear_model.LinearRegression()
-    #ols.fit(train_data, train_labels)
+    while True:
+        from sklearn import linear_model
+        from regressors import stats
+        ols = linear_model.LinearRegression()
 
-    #print(stats.summary(ols, train_data,train_labels, xlabels=list(train_data.columns)))
+        ols = ols.fit(train_data, train_labels)
 
 
-    forest_regressor(train_data, train_labels, test_data, test_labels,valid_set_data,valid_set_labels,pred_set,pred_set_id)
+        xlabels = list(train_data.columns)
+        statCoef = list(stats.coef_pval(ols, train_data,train_labels))
 
-    #linear_reg(train_data, train_labels, test_data, test_labels,valid_set_data,valid_set_labels,pred_set,pred_set_id)
+        h = 0
+        for x in range(len(statCoef)-1):
+            if h < statCoef[x+1]:
+                h = statCoef[x+1]
 
+                #0.05
+        if h > 0.07:
+            idx = statCoef.index(h) - 1
+            train_data = train_data.drop(columns=xlabels[idx])
+            test_data = test_data.drop(columns=xlabels[idx])
+            pred_set = pred_set.drop(columns=xlabels[idx])
+
+        else:
+            break
+
+    stats.summary(ols, train_data, train_labels, xlabels=xlabels)
+
+    forest_regressor(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+
+    linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+
+    lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+
+    ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
 
 data = pd.read_csv('iowaHomes.csv')
 
-# data['SalePrice'] = data['SalePrice'].apply(np.log)
-# data['1stFlrSF'] = data['1stFlrSF'].apply(np.log)
-# data['BsmtFinSF1'] = data['BsmtFinSF1'].apply(np.log)
-#hist_BsmtFinSF1
 
 
-# import seaborn as sns
-# import matplotlib
-# sns.distplot(data['BsmtFinSF1'], color='blue', axlabel='BsmtFinSF1')
-# fig = matplotlib.pyplot.gcf()
-# fig.set_size_inches(18.5, 10.5)
-# plt.show()
-# plt.close()
-# exit()
+data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
+data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
+data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
+data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] > 360000)].index)
+data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] < 90000)].index)
 
+
+data = data.drop(data[(data['YearBuilt'] < 1920) & (data['SalePrice'] > 250000)].index)
+data = data.drop(data[(data['YearBuilt'] < 1960) & (data['SalePrice'] > 300000)].index)
+
+
+data = data.drop(data[data['LotArea'] > 35000].index)
+
+data = data.drop(data[(data['SalePrice'] > 550000)].index)
+
+data = data.drop(data[(data['OverallCond'] == 2.0) & (data['SalePrice'] > 330000)].index)
+
+data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
+
+
+data = data.drop([341,348])
+plt.scatter(data['BsmtFinSF1'], data['SalePrice'], alpha=0.5)
+plt.xlabel('BsmtFinSF1')
+plt.ylabel('SalePrice')
+#plt.show()
+#exit()
+
+
+# data = data_pipeline(data)
 # for column in data:
-#     try:
-#         sns.distplot(data[column], color='blue', axlabel=column)
-#         fig = matplotlib.pyplot.gcf()
-#         fig.set_size_inches(18.5, 10.5)
-#         plt.savefig('plots/histograms/hist_' + str(column) + '.png',dpi=100)
-#         plt.close()
-#     except:
-#         pass
+#     plt.scatter(data[column], data['SalePrice'], alpha=0.5)
 #
-# exit()
-# for column in data:
-#     plt.scatter(data['SalePrice'], data[column], alpha=0.5)
-#
-#     plt.xlabel('SalePrice')
-#     plt.ylabel(column)
-#
-#
+#     plt.xlabel(column)
+#     plt.ylabel('SalePrice')
+#     fig = matplotlib.pyplot.gcf()
+#     fig.set_size_inches(18.5, 10.5)
 #     plt.savefig('plots/scatterplots/scatter_' + str(column) + '.png')
 #     plt.close()
+# exit()
 
-# for column in data:
-#     try:
-#         plt.boxplot(data[column], labels=[column])
-#         plt.savefig('plots/boxplots/boxplot_' + str(column) + '.png')
-#         plt.close()
-#     except:
-#         pass
 
+#print(data['SalePrice'])
+#exit()
 
 dropped_attribs = ["Id", "Alley",
-                    "Street",
+                    "Street",'PoolQC','3SsnPorch',"2ndFlrSF",
+                   'EnclosedPorch','Utilities','RoofStyle',
+                   'RoofMatl',"PoolArea"
                    ]
 
 
@@ -299,7 +357,7 @@ data = data.drop(columns=dropped_attribs)
 
 
 #exit()
-data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
+#data, valid_set = train_test_split(data, test_size=0.2, random_state=42)
 
 # data = factorize_data(data)
 # data = data.drop(columns=['SalePrice'])
