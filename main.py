@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn import linear_model
 from sklearn.metrics import r2_score
+
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
@@ -13,8 +14,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 import matplotlib
 import warnings
-#warnings.filterwarnings("ignore", category=UserWarning,)
-#warnings.filterwarnings("ignore", category=RuntimeWarning,)
+warnings.filterwarnings("ignore", category=FutureWarning,)
+warnings.filterwarnings("ignore", category=UserWarning,)
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -32,14 +33,11 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
 
     pred = reg.predict(test_data)
     print("Linear Regression")
-    print(mean_squared_log_error(test_labels, pred))
-    print(mean_squared_error(test_labels,pred))
-    print(explained_variance_score(test_labels, pred))
+    print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    print("RMSE ", mean_squared_error(test_labels, pred))
+    print("Variance ", explained_variance_score(test_labels, pred))
+    print("R2 ", r2_score(test_labels, pred))
 
-    # print("Validation Set")
-    # pred = reg.predict(valid_set_data)
-    # print(mean_squared_log_error(valid_set_labels, pred))
-    # print(explained_variance_score(valid_set_labels, pred))
 
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
@@ -50,16 +48,43 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
 def lasso(train_data, train_labels, test_data, test_labels,
                      pred_set=None,pred_set_id=None):
 
-    reg = linear_model.Lasso(random_state=42)
+    from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
+    alpha = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # Number of features to consider at every split
+    fit_intercept = [True, False]
+    # Maximum number of levels in tree
+    normalize = [True, False]
+    precompute = [True, False]
+    # Minimum number of samples required to split a node
+    max_iter = [x for x in np.arange(start=100, stop=1000, step=100)]
+    # Minimum number of samples required at each leaf node
+    tol = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # Method of selecting samples for training each tree
+    positive = [True, False]  # Create the random grid
+    random_grid = {'alpha': alpha,
+                   'fit_intercept': fit_intercept,
+                   'normalize': normalize,
+                   'precompute': precompute,
+                   'max_iter': max_iter,
+                   'tol': tol}
+
+    reg = linear_model.Lasso(tol=0.04, precompute=True, normalize=True,
+                             max_iter=200,fit_intercept=True, alpha=0.0,
+                             random_state=42)
+
+    #rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=1000, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    #rf_random.fit(train_data, train_labels)
+    #print(rf_random.best_params_)
 
     reg.fit(train_data, train_labels)
 
 
     pred = reg.predict(test_data)
     print("Lasso")
-    print(mean_squared_log_error(test_labels, pred))
-    print(mean_squared_error(test_labels,pred))
-    print(explained_variance_score(test_labels, pred))
+    print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    print("RMSE ", mean_squared_error(test_labels, pred))
+    print("Variance ", explained_variance_score(test_labels, pred))
+    print("R2 ", r2_score(test_labels, pred))
 
     # print("Validation Set")
     # pred = reg.predict(valid_set_data)
@@ -79,33 +104,36 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
     from sklearn.model_selection import GridSearchCV
 
     from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
-    n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
-    # Number of features to consider at every split
-    max_features = ['auto', 'sqrt']
-    # Maximum number of levels in tree
+    n_estimators = [int(x) for x in np.linspace(start=10, stop=2000, num=10)]
+    max_features = ['auto', 'sqrt','log2', None]
     max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
     max_depth.append(None)
-    # Minimum number of samples required to split a node
     min_samples_split = [2, 5, 10]
-    # Minimum number of samples required at each leaf node
     min_samples_leaf = [1, 2, 4]
-    # Method of selecting samples for training each tree
+    min_weight_fraction_leaf = [x for x in np.arange(start=0.0, stop=0.5, step=0.01)]
+    max_leaf_nodes = [int(x) for x in np.arange(start=5, stop=200, step=5)]
+    max_leaf_nodes.append(None)
+    min_impurity_decrease = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
     bootstrap = [True, False]  # Create the random grid
     random_grid = {'n_estimators': n_estimators,
                    'max_features': max_features,
                    'max_depth': max_depth,
                    'min_samples_split': min_samples_split,
                    'min_samples_leaf': min_samples_leaf,
-                   'bootstrap': bootstrap}
+                   'bootstrap': bootstrap,
+                   'min_weight_fraction_leaf': min_weight_fraction_leaf,
+                   'max_leaf_nodes': max_leaf_nodes,
+                   'min_impurity_decrease': min_impurity_decrease,
+                   }
 
     from sklearn.ensemble import RandomForestRegressor
-    #reg = RandomForestRegressor()
-    reg = RandomForestRegressor(n_estimators=400, min_samples_split=2,
-                                min_samples_leaf=1, max_features='sqrt',max_depth=None,
-                                bootstrap=False,
+    #reg = RandomForestRegressor(random_state=42)
+    reg = RandomForestRegressor(n_estimators=231, min_weight_fraction_leaf=0.05,min_samples_split=2,
+                                min_samples_leaf=4, min_impurity_decrease=0.0, max_leaf_nodes=185,
+                                max_features='log2',max_depth=10,
                                 random_state=42, n_jobs=-1)
 
-    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=2000, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
     # rf_random.fit(train_data, train_labels)
     # print(rf_random.best_params_)
 
@@ -113,9 +141,10 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
 
     pred = reg.predict(test_data)
     print("Forest Regressor")
-    print(mean_squared_log_error(test_labels, pred))
-    print(mean_squared_error(test_labels, pred))
-    print(explained_variance_score(test_labels, pred))
+    print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    print("RMSE ", mean_squared_error(test_labels, pred))
+    print("Variance ", explained_variance_score(test_labels, pred))
+    print("R2 ", r2_score(test_labels, pred))
 
     #print("Validation Set")
     #pred = reg.predict(valid_set_data)
@@ -132,22 +161,35 @@ def forest_regressor(train_data, train_labels, test_data, test_labels,
 
 def ridge(train_data, train_labels, test_data, test_labels,
                      pred_set=None,pred_set_id=None):
+    # from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
+    # alpha = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # fit_intercept = [True, False]
+    # solver = ['svd', 'cholesky', 'lsqr', 'sparse_cg']
+    # max_iter = [x for x in np.arange(start=100, stop=5000, step=100)]
+    # tol = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # random_grid = {'alpha': alpha,
+    #                'fit_intercept': fit_intercept,
+    #                'solver': solver,
+    #                'max_iter': max_iter,
+    #                'tol': tol}
 
-    #reg = RandomForestRegressor()
-    reg = linear_model.RidgeCV(cv=5)
+    reg = linear_model.Ridge(tol=0.06, solver="svd", max_iter=4500, fit_intercept=True,
+                             alpha=0.46, random_state=42)
 
-    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=100, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=2000, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
     # rf_random.fit(train_data, train_labels)
     # print(rf_random.best_params_)
+
+
 
     reg.fit(train_data, train_labels)
 
     pred = reg.predict(test_data)
-    print("RidgeCV")
-    print(mean_squared_log_error(test_labels, pred))
-    print(mean_squared_error(test_labels, pred))
-    print(explained_variance_score(test_labels, pred))
-
+    print("Ridge")
+    print("RMSLE ",mean_squared_log_error(test_labels, pred))
+    print("RMSE ",mean_squared_error(test_labels, pred))
+    print("Variance ",explained_variance_score(test_labels, pred))
+    print("R2 ", r2_score(test_labels,pred))
     #print("Validation Set")
     #pred = reg.predict(valid_set_data)
     #print(mean_squared_log_error(valid_set_labels, pred))
@@ -271,7 +313,7 @@ def main():
 
     stats.summary(ols, train_data, train_labels, xlabels=xlabels)
 
-    forest_regressor(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+    #forest_regressor(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
 
     linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
 
@@ -279,15 +321,54 @@ def main():
 
     ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
 
+
 data = pd.read_csv('iowaHomes.csv')
 
 
+from sklearn.neighbors import LocalOutlierFactor
+outliers = data.loc[data['SalePrice'] > 50000]
+outliers = outliers[['SalePrice']]
+outliers['outlier'] = LocalOutlierFactor(n_neighbors=100, contamination=0.1).fit_predict(outliers)
+outliers = outliers.loc[outliers['outlier'] == -1].index.values
+data = data.drop(outliers)
 
-data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
-data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
-data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
-data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] > 360000)].index)
-data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] < 90000)].index)
+outliers = data.loc[data['OverallQual'] > 3]
+outliers = outliers[['OverallQual','SalePrice']]
+outliers['outlier'] = LocalOutlierFactor(n_neighbors=150, contamination=0.1).fit_predict(outliers)
+outliers = outliers.loc[outliers['outlier'] == -1].index.values
+print(outliers)
+print(len(outliers))
+
+plt.scatter(data['OverallQual'], data['SalePrice'], alpha=0.2)
+plt.xlabel('OverallQual')
+plt.ylabel('SalePrice')
+fig = matplotlib.pyplot.gcf()
+fig.set_size_inches(18.5, 10.5)
+plt.savefig('plots/scatterplots/scatter_' + str('OverallQual') + '.png')
+plt.close()
+
+
+data = data.drop(outliers)
+
+
+#data = data_pipeline(data)
+# for column in data:
+#     plt.scatter(data[column], data['SalePrice'], alpha=0.5)
+#     plt.xlabel(column)
+#     plt.ylabel('SalePrice')
+#     fig = matplotlib.pyplot.gcf()
+#     fig.set_size_inches(18.5, 10.5)
+#     plt.savefig('plots/scatterplots/scatter_' + str(column) + '.png')
+#     plt.close()
+# exit()
+
+#data = data.drop(data[(data['SalePrice'] > 550000)].index)
+
+# data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
+# data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
+# data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
+# data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] > 360000)].index)
+# data = data.drop(data[(data['OverallQual'] == 7.0) & (data['SalePrice'] < 90000)].index)
 
 
 data = data.drop(data[(data['YearBuilt'] < 1920) & (data['SalePrice'] > 250000)].index)
@@ -296,32 +377,23 @@ data = data.drop(data[(data['YearBuilt'] < 1960) & (data['SalePrice'] > 300000)]
 
 data = data.drop(data[data['LotArea'] > 35000].index)
 
-data = data.drop(data[(data['SalePrice'] > 550000)].index)
+
 
 data = data.drop(data[(data['OverallCond'] == 2.0) & (data['SalePrice'] > 330000)].index)
 
 data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
 
 
-data = data.drop([341,348])
-plt.scatter(data['BsmtFinSF1'], data['SalePrice'], alpha=0.5)
-plt.xlabel('BsmtFinSF1')
-plt.ylabel('SalePrice')
+#data = data.drop([341,348])
+#
+# plt.scatter(data['BsmtFinSF1'], data['SalePrice'], alpha=0.5)
+# plt.xlabel('BsmtFinSF1')
+# plt.ylabel('SalePrice')
 #plt.show()
 #exit()
 
 
-# data = data_pipeline(data)
-# for column in data:
-#     plt.scatter(data[column], data['SalePrice'], alpha=0.5)
 #
-#     plt.xlabel(column)
-#     plt.ylabel('SalePrice')
-#     fig = matplotlib.pyplot.gcf()
-#     fig.set_size_inches(18.5, 10.5)
-#     plt.savefig('plots/scatterplots/scatter_' + str(column) + '.png')
-#     plt.close()
-# exit()
 
 
 #print(data['SalePrice'])
