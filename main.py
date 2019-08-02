@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn import linear_model
 from sklearn.metrics import r2_score
-
+from sklearn.metrics import make_scorer
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
@@ -134,7 +134,7 @@ def bayesian_ridge(train_data, train_labels, test_data, test_labels,
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
         res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
-        res.to_csv("predictionsRidge.csv", index=False)
+        res.to_csv("predictionsBayesianRidge.csv", index=False)
 
     return pred, v_pred
     ##########################################################################
@@ -182,11 +182,55 @@ def ridge(train_data, train_labels, test_data, test_labels,
     ##########################################################################
 
 
+def SVR(train_data, train_labels, test_data, test_labels,
+                     pred_set=None,pred_set_id=None):
+
+    from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
+
+    gamma = [x for x in np.arange(start=0.01, stop=5, step=0.01)]
+    gamma.append("auto")
+
+    random_grid = {'kernel': ['linear', 'poly', 'rbf'],
+                   'gamma': gamma,
+                   'C':[x for x in np.arange(start=0.01, stop=5, step=0.01)],
+                   }
+    from sklearn.svm import SVR
+    reg = SVR()
+    #reg = linear_model.Ridge(tol=0.06, solver="svd", max_iter=4500, fit_intercept=True,
+                             #alpha=0.46, random_state=42)
+
+    rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid,
+                                   n_iter=10, cv=3, verbose=2,random_state=42,
+                                   n_jobs=-1,scoring=make_scorer(mean_squared_error, greater_is_better=False))
+    rf_random.fit(train_data, train_labels)
+    print(rf_random.best_params_)
+
+
+
+    reg.fit(train_data, train_labels)
+
+    pred = reg.predict(test_data)
+    print("SVR")
+    print("RMSLE ",mean_squared_log_error(test_labels, pred))
+    print("RMSE ",mean_squared_error(test_labels, pred))
+    print("Variance ",explained_variance_score(test_labels, pred))
+
+
+    if pred_set is not None:
+        v_pred = reg.predict(pred_set)
+        v_pred = np.exp(v_pred)
+
+
+    return pred, v_pred
+    ##########################################################################
+
+
+
 def feature_engineering(d):
     d['TotalSF'] = d['TotalBsmtSF'] + d['1stFlrSF'] + d['2ndFlrSF']
 
-    d['Bathrooms'] = d['BsmtFullBath'] + d['BsmtHalfBath'] + d['FullBath'] + d['HalfBath']
-    d['PorchSF'] = d['OpenPorchSF'] + d['EnclosedPorch'] + d['3SsnPorch'] + d['ScreenPorch']
+    #d['Bathrooms'] = d['BsmtFullBath'] + d['BsmtHalfBath'] + d['FullBath'] + d['HalfBath']
+    #d['PorchSF'] = d['OpenPorchSF'] + d['EnclosedPorch'] + d['3SsnPorch'] + d['ScreenPorch']
 
 
 
@@ -258,10 +302,9 @@ def main():
                        "Street", 'PoolQC', 'Utilities', 'RoofStyle',
                        'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
                         'Exterior2nd',
-                       '1stFlrSF', '2ndFlrSF',
-                       'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch',
-                       'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath',
-
+                       '1stFlrSF', '2ndFlrSF'
+                       #'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch',
+                       #'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath',
                        ]
 
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
@@ -330,7 +373,7 @@ def main():
             if h < statCoef[x+1]:
                 h = statCoef[x+1]
 
-                #0.07
+                #0.06
         if h > 0.06:
             idx = statCoef.index(h) - 1
             train_data = train_data.drop(columns=xlabels[idx])
@@ -347,6 +390,7 @@ def main():
     pred2, vpred2 = lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred3, vpred3 = ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred4, vpred4 = bayesian_ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+    pred5, vpred5 = SVR(train_data, train_labels, test_data, test_labels, pred_set, pred_set_id)
 
     pred = (pred1 + pred2 + pred3 + pred4) / 4
     vpred = (vpred1 + vpred2 + vpred3 + vpred4) / 4
