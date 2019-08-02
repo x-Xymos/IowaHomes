@@ -1,0 +1,47 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'predict/style.css' %}">
+
+<h1>Submit prediction</h1>
+
+<div id="predict-form-outer">
+    <p id="description">Please enter inputs</p>
+    <form id="predict-input-form" action="{% url 'predict:run' %}" method="post">
+    {% csrf_token %}
+        <div>
+            <input type="radio" name="choice" value="xd1">choice1<br>
+            <input type="radio" name="choice" value="xd2">choice2<br>
+            <input type="radio" name="choice" value="xd3">choice3<br>
+            <input type="radio" name="choice" value="xd4">choice4<br>
+            <input type="radio" name="choice" value="xd5">choice5<br>
+            <input type="radio" name="choice" value="xd6">choice6<br>
+        </div>
+
+
+        <div>
+          <input type="range" id="start" name="volume"
+                 min="0" max="11">
+          <label for="volume">Volume</label>
+        </div>
+        <div>
+          <input type="range" id="start" name="volume"
+                 min="0" max="11">
+          <label for="volume">Volume</label>
+        </div>
+        <div>
+          <input type="range" id="start" name="volume"
+                 min="0" max="11">
+          <label for="volume">Volume</label>
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+
+
+{% if pred_result %}
+<h1> {{pred_result.choice}}{{pred_result.volume}}</h1>
+{% endif %}
+
+{% include "predict/footer.html" %}
