@@ -1,0 +1,40 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'predict/style.css' %}">
+
+{% include "predict/header.html" %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+</head>
+
+<div class="content">
+    <h1>Estimate House Value</h1>
+
+    <div id="predict-form-outer">
+        <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
+        <form id="predict-input-form" action="{% url 'predict:estimate' %}" method="post">
+        {% csrf_token %}
+            {% for elem in cooked_elems %}
+             {% autoescape on %}
+                    {{elem|safe}}
+                {% endautoescape %}
+            {% endfor %}
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+
+    {% if pred_result %}
+    <h1>Estimated House Value: ${{pred_result.choice}}{{pred_result.LotArea}}</h1>
+    {% endif %}
+</div>
+
+
+{% include "predict/footer.html" %}
