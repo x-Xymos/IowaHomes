@@ -33,11 +33,14 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
 
     pred = reg.predict(test_data)
     print("Linear Regression")
-    print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    try:
+        print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    except:
+        pass
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
-
+    v_pred = []
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
@@ -86,6 +89,7 @@ def lasso(train_data, train_labels, test_data, test_labels,
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
+    v_pred = []
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
@@ -129,7 +133,7 @@ def bayesian_ridge(train_data, train_labels, test_data, test_labels,
     print("RMSE ",mean_squared_error(test_labels, pred))
     print("Variance ",explained_variance_score(test_labels, pred))
 
-
+    v_pred = []
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
@@ -171,7 +175,7 @@ def ridge(train_data, train_labels, test_data, test_labels,
     print("RMSE ",mean_squared_error(test_labels, pred))
     print("Variance ",explained_variance_score(test_labels, pred))
 
-
+    v_pred = []
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
@@ -181,45 +185,44 @@ def ridge(train_data, train_labels, test_data, test_labels,
     return pred, v_pred
     ##########################################################################
 
-
-def SVR(train_data, train_labels, test_data, test_labels,
+def gboost(train_data, train_labels, test_data, test_labels,
                      pred_set=None,pred_set_id=None):
-
-    from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
-
-    gamma = [x for x in np.arange(start=0.01, stop=5, step=0.01)]
-    gamma.append("auto")
-
-    random_grid = {'kernel': ['linear', 'poly', 'rbf'],
-                   'gamma': gamma,
-                   'C':[x for x in np.arange(start=0.01, stop=5, step=0.01)],
-                   }
-    from sklearn.svm import SVR
-    reg = SVR()
-    #reg = linear_model.Ridge(tol=0.06, solver="svd", max_iter=4500, fit_intercept=True,
-                             #alpha=0.46, random_state=42)
-
-    rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid,
-                                   n_iter=10, cv=3, verbose=2,random_state=42,
-                                   n_jobs=-1,scoring=make_scorer(mean_squared_error, greater_is_better=False))
-    rf_random.fit(train_data, train_labels)
-    print(rf_random.best_params_)
+    # from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
+    # alpha = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # fit_intercept = [True, False]
+    # solver = ['svd', 'cholesky', 'lsqr', 'sparse_cg']
+    # max_iter = [x for x in np.arange(start=100, stop=5000, step=100)]
+    # tol = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
+    # random_grid = {'alpha': alpha,
+    #                'fit_intercept': fit_intercept,
+    #                'solver': solver,
+    #                'max_iter': max_iter,
+    #                'tol': tol}
+    from sklearn.ensemble import GradientBoostingRegressor
+    reg = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
+                                       max_depth=4, max_features='sqrt',
+                                       min_samples_leaf=15, min_samples_split=10,
+                                       loss='huber', random_state=5)
 
 
 
+    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=2000, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
+    # rf_random.fit(train_data, train_labels)
+    # print(rf_random.best_params_)
     reg.fit(train_data, train_labels)
 
     pred = reg.predict(test_data)
-    print("SVR")
-    print("RMSLE ",mean_squared_log_error(test_labels, pred))
-    print("RMSE ",mean_squared_error(test_labels, pred))
-    print("Variance ",explained_variance_score(test_labels, pred))
+    print("GBOOST")
+    print("RMSLE ", mean_squared_log_error(test_labels, pred))
+    print("RMSE ", mean_squared_error(test_labels, pred))
+    print("Variance ", explained_variance_score(test_labels, pred))
 
-
+    v_pred = []
     if pred_set is not None:
         v_pred = reg.predict(pred_set)
         v_pred = np.exp(v_pred)
-
+        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
+        res.to_csv("predictionsGBOOST.csv", index=False)
 
     return pred, v_pred
     ##########################################################################
@@ -228,11 +231,13 @@ def SVR(train_data, train_labels, test_data, test_labels,
 
 def feature_engineering(d):
     d['TotalSF'] = d['TotalBsmtSF'] + d['1stFlrSF'] + d['2ndFlrSF']
+    d = d.drop(columns=['1stFlrSF', '2ndFlrSF'])
 
     #d['Bathrooms'] = d['BsmtFullBath'] + d['BsmtHalfBath'] + d['FullBath'] + d['HalfBath']
-    #d['PorchSF'] = d['OpenPorchSF'] + d['EnclosedPorch'] + d['3SsnPorch'] + d['ScreenPorch']
+    #d = d.drop(columns=['BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath'])
 
-
+    d['PorchSF'] = d['OpenPorchSF'] + d['EnclosedPorch'] + d['3SsnPorch'] + d['ScreenPorch']
+    d = d.drop(columns=['OpenPorchSF', 'EnclosedPorch','3SsnPorch','ScreenPorch'])
 
     return d
 
@@ -248,7 +253,7 @@ def data_pipeline(d):
             d[att] = naImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
-        continue
+            continue
 
     cat_attribs = list(d.select_dtypes(include=[np.object]).columns)
     freqImputer = SimpleImputer(strategy="most_frequent")
@@ -257,7 +262,7 @@ def data_pipeline(d):
             d[att] = freqImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
-        continue
+            continue
 
     num_attribs = list(d.select_dtypes(include=[np.number]).columns)
     numImputer = SimpleImputer(strategy="median")
@@ -266,26 +271,25 @@ def data_pipeline(d):
             d[att] = numImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
-        continue
-
-    scale_log_attribs = ['LotFrontage','MasVnrArea','LotArea',
-                         '1stFlrSF','2ndFlrSF','BsmtFinSF1','BsmtFinSF2',
-                         'BsmtUnfSF','GrLivArea',
-                         'OpenPorchSF','TotalBsmtSF']
-
-    for att in scale_log_attribs:
-        try:
-            d[att] = d[att].apply(np.log)
-            d[att] = d[att].replace(-np.inf, 0)
-        except KeyError:
-            print("Warning, KeyError, attrib not found in data")
             continue
 
+    # scale_log_attribs = ['LotFrontage','MasVnrArea','LotArea',
+    #                      '1stFlrSF','2ndFlrSF','BsmtFinSF1','BsmtFinSF2',
+    #                      'BsmtUnfSF','GrLivArea',
+    #                      'OpenPorchSF','TotalBsmtSF']
+    #
+    # for att in scale_log_attribs:
+    #     try:
+    #         d[att] = d[att].apply(np.log)
+    #         d[att] = d[att].replace(-np.inf, 0)
+    #     except KeyError:
+    #         print("Warning, KeyError, attrib not found in data")
+    #         continue
 
 
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
-    factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd','YrSold',
-                                                     'MoSold','GarageYrBlt','MSSubClass']
+    factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd',
+                                                     'GarageYrBlt','MSSubClass']
     enc = OrdinalEncoder()
     for att in factorization_attribs:
         try:
@@ -298,17 +302,10 @@ def data_pipeline(d):
 
 
 def main():
-    dropped_attribs = ["Id", "Alley",
-                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
-                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
-                        'Exterior2nd',
-                       '1stFlrSF', '2ndFlrSF'
-                       #'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch',
-                       #'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath',
-                       ]
+
+
 
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
-
 
     train_labels = train_data['SalePrice'].apply(np.log)
     train_data = train_data.drop(columns='SalePrice')
@@ -333,16 +330,32 @@ def main():
 
     test_data = data_pipeline(test_data)
     test_data = feature_engineering(test_data)
-
+    train_test_data = pd.concat([train_data,test_data])
 
     pred_set = pd.read_csv('test.csv')
     pred_set_id = pred_set['Id']
+    pred_set = pred_set.drop(columns=dropped_attribs)
     pred_set = data_pipeline(pred_set)
     pred_set = feature_engineering(pred_set)
 
-    train_data = train_data.drop(columns=dropped_attribs)
-    test_data = test_data.drop(columns=dropped_attribs)
-    pred_set = pred_set.drop(columns=dropped_attribs)
+    scale_log_attribs = ['LotFrontage', 'MasVnrArea', 'LotArea',
+                          '1stFlrSF','2ndFlrSF','BsmtFinSF1','BsmtFinSF2',
+                          'BsmtUnfSF','GrLivArea',
+                          'OpenPorchSF','TotalBsmtSF']
+
+    for att in scale_log_attribs:
+        try:
+            train_test_data[att] = train_test_data[att].apply(np.log)
+            train_test_data[att] = train_test_data[att].replace(-np.inf, 0)
+
+            pred_set[att] = pred_set[att].apply(np.log)
+            pred_set[att] = pred_set[att].replace(-np.inf, 0)
+        except KeyError:
+            print("Warning, KeyError, attrib not found in data")
+            continue
+
+    test_data = train_test_data[len(train_data):]
+    train_data = train_test_data[:len(train_data)]
 
 
     # import seaborn as sns
@@ -374,7 +387,7 @@ def main():
                 h = statCoef[x+1]
 
                 #0.06
-        if h > 0.06:
+        if h > 0.05:
             idx = statCoef.index(h) - 1
             train_data = train_data.drop(columns=xlabels[idx])
             test_data = test_data.drop(columns=xlabels[idx])
@@ -385,12 +398,12 @@ def main():
 
     stats.summary(ols, train_data, train_labels, xlabels=xlabels)
 
-
+    #exit()
     pred1, vpred1 = linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred2, vpred2 = lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred3, vpred3 = ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred4, vpred4 = bayesian_ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
-    pred5, vpred5 = SVR(train_data, train_labels, test_data, test_labels, pred_set, pred_set_id)
+    #pred5, vpred5 = gboost(train_data, train_labels, test_data, test_labels, pred_set, pred_set_id)
 
     pred = (pred1 + pred2 + pred3 + pred4) / 4
     vpred = (vpred1 + vpred2 + vpred3 + vpred4) / 4
@@ -407,6 +420,7 @@ def main():
 data = pd.read_csv('iowaHomes.csv')
 
 
+
 data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
 data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
 data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
@@ -415,9 +429,22 @@ data = data.drop(data[(data['YearBuilt'] < 1960) & (data['SalePrice'] > 300000)]
 
 data = data.drop(data[data['LotArea'] > 35000].index)
 
+data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
+
 data = data.drop(data[(data['SalePrice'] > 550000)].index)
 
-data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
+
+dropped_attribs = ["Id", "Alley",
+                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
+                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
+                        'Exterior2nd',
+                       #'1stFlrSF', '2ndFlrSF',
+
+                       #'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
+                       # estimate the price of a house based on these as the house hasn't been sold yet
+
+                       ]
+data = data.drop(columns=dropped_attribs)
 
 
 main()

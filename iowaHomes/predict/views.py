@@ -187,6 +187,18 @@ def estimate(request):
          "labelText": "Basement Exposure",
          "tooltip": "Refers to walkout or garden level walls"},
 
+        {"name": "BsmtFinType1",
+         "fields": [{"value": "GLQ", "text": "Good Living Quarters"},
+                    {"value": "ALQ", "text": "Average Living Quarters"},
+                    {"value": "BLQ", "text": "Below Average Living Quarters"},
+                    {"value": "Rec", "text": "Average Rec Room"},
+                    {"value": "LwQ", "text": "Low Quality"},
+                    {"value": "Unf", "text": "Unfinshed"},
+                    {"value": "NA", "text": "No Basement"},
+                    ],
+         "labelText": "Basement Finished Area Rating",
+         "tooltip": " Rating of basement finished area"},
+
     ]
 
     range_sliders = [
@@ -220,6 +232,16 @@ def estimate(request):
          "tooltip": " Masonry veneer area in square feet"
          },
 
+        {"name": "TotalBsmtSF",
+         "min": '0',
+         "max": '8000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Basement Area",
+         "tooltip": "Total square feet of basement area"
+         },
+
        ]
 
     elem_render_order = ['MSZoning',
@@ -231,7 +253,9 @@ def estimate(request):
                      'LotArea',
                      'ExterCond',
                      'BsmtQual',
-                     'BsmtExposure'
+                     'BsmtExposure',
+                     'BsmtFinType1',
+                     'TotalBsmtSF'
 
                      ]
 
