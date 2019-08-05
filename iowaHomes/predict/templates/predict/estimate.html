@@ -15,7 +15,9 @@
 </head>
 
 <div class="content">
-    <h1>Estimate House Value</h1>
+
+    <h1>Estimated House Value: {% if prediction %} ${{prediction}} {% endif %}</h1>
+
 
     <div id="predict-form-outer">
         <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
@@ -29,11 +31,6 @@
             <input type="submit" value="Submit">
         </form>
     </div>
-
-
-    {% if pred_result %}
-    <h1>Estimated House Value: ${{pred_result.choice}}{{pred_result.LotArea}}</h1>
-    {% endif %}
 </div>
 
 

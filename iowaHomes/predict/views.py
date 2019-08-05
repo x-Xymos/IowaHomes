@@ -1,8 +1,9 @@
 from django.views import generic
 from django.shortcuts import render
 import datetime
-
-
+import pickle
+import pandas as pd
+import os
 
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
@@ -40,7 +41,7 @@ class LoginView(generic.ListView):
 #
 #     return data_uri.decode('utf-8')
 
-def range_slider_template(slider):
+def range_slider_factory(slider):
 
     r = '<div class="rowTab">' \
         '   <script> ' \
@@ -77,7 +78,7 @@ def range_slider_template(slider):
         .replace("{{slider.tooltip}}",slider['tooltip'])\
 
 
-def dropdown_menu_template(menu):
+def dropdown_menu_factory(menu):
     r = '<div class="rowTab">' \
         '   <script>' \
         '       $( function() {' \
@@ -100,7 +101,26 @@ def dropdown_menu_template(menu):
             .replace('{{menu.tooltip}}', menu['tooltip'])\
 
 
-def estimate(request):
+
+def runEstimate(args):
+    models = ['l_reg_model.sav', 'lasso_model.sav','ridge_model.sav','b_ridge_model.sav']
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    df = pd.DataFrame(columns=list(args.keys()))
+    df.loc[0] = list(args.values())
+    
+    pred = 0
+    for model in models:
+        path = os.path.join(BASE_DIR, 'iowaHomes/predictionModels/28features/')
+
+        reg = pickle.load(open(path + model, 'rb'))
+        pred = pred + reg.predict(df)
+
+
+    return pred / len(models)
+
+
+def EstimateView(request):
 
     dropdown_menus = [
         {"name":"MSZoning",
@@ -199,6 +219,54 @@ def estimate(request):
          "labelText": "Basement Finished Area Rating",
          "tooltip": " Rating of basement finished area"},
 
+        {"name": "HeatingQC",
+         "fields": [{"value": "Ex", "text": "Excellent"},
+                    {"value": "Gd", "text": "Good"},
+                    {"value": "TA", "text": "Average/Typical"},
+                    {"value": "Fa", "text": "Fair"},
+                    {"value": "Po", "text": "Poor"},
+                    ],
+         "labelText": "Heating quality",
+         "tooltip": " Heating quality and condition"},
+
+        {"name": "CentralAir",
+         "fields": [{"value": "Y", "text": "Yes"},
+                    {"value": "N", "text": "No"},
+                    ],
+         "labelText": "Central air",
+         "tooltip": "Central air conditioning"},
+
+        {"name": "KitchenQual",
+         "fields": [{"value": "Ex", "text": "Excellent"},
+                    {"value": "Gd", "text": "Good"},
+                    {"value": "TA", "text": "Average/Typical"},
+                    {"value": "Fa", "text": "Fair"},
+                    {"value": "Po", "text": "Poor"},
+                    ],
+         "labelText": "Kitchen quality",
+         "tooltip": "Kitchen quality rating"},
+
+        {"name": "Functional",
+         "fields": [{"value": "Typ", "text": "Typical Functionality"},
+                    {"value": "Min1", "text": "Minor Deductions 1"},
+                    {"value": "Min2", "text": "Minor Deductions 2"},
+                    {"value": "Mod", "text": "Moderate Deductions"},
+                    {"value": "Maj1", "text": "Major Deductions 1"},
+                    {"value": "Maj2", "text": "Major Deductions 2"},
+                    {"value": "Sev", "text": "Severely Damaged"},
+                    {"value": "Sal", "text": "Salvage only"},
+                    ],
+         "labelText": "Functionality Rating",
+         "tooltip": "Home functionality (Assume typical unless deductions are warranted)"},
+
+        {"name": "PavedDrive",
+         "fields": [{"value": "Y", "text": "Paved"},
+                    {"value": "P", "text": "Partial Pavement"},
+                    {"value": "N", "text": "Dirt/Gravel"},
+                    ],
+         "labelText": "Driveway type",
+         "tooltip": ""},
+
     ]
 
     range_sliders = [
@@ -242,20 +310,201 @@ def estimate(request):
          "tooltip": "Total square feet of basement area"
          },
 
-       ]
+        {"name": "YearRemodAdd",
+         "min": '1870',
+         "max": str(datetime.datetime.today().year),
+         "step": '1',
+         "value": str(datetime.datetime.today().year),
+         "unit": "",
+         "labelText": "Remodel/Addition Year",
+         "tooltip": "Remodel date (same as construction date if no remodeling or additions)"
+         },
+
+        {"name": "GrLivArea",
+         "min": '200',
+         "max": '7000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Above grade area",
+         "tooltip": "Above grade (ground) living area square feet"
+         },
+
+        {"name": "BsmtFullBath",
+         "min": '0',
+         "max": '10',
+         "step": '1',
+         "value": '0',
+         "unit": "",
+         "labelText": "Basement full bathrooms",
+         "tooltip": "Amount of full basement bathrooms"
+         },
+
+        {"name": "BedroomAbvGr",
+         "min": '0',
+         "max": '15',
+         "step": '1',
+         "value": '0',
+         "unit": "",
+         "labelText": "Bedrooms above grade",
+         "tooltip": "Bedrooms above grade (does NOT include basement bedrooms)"
+         },
+
+        {"name": "KitchenAbvGr",
+         "min": '0',
+         "max": '15',
+         "step": '1',
+         "value": '0',
+         "unit": "",
+         "labelText": "Kitchens",
+         "tooltip": "Kitchens above grade"
+         },
+
+        {"name": "Fireplaces",
+         "min": '0',
+         "max": '15',
+         "step": '1',
+         "value": '0',
+         "unit": "",
+         "labelText": "Fireplaces",
+         "tooltip": "Number of fireplaces"
+         },
+
+        {"name": "GarageYrBlt",
+         "min": '1870',
+         "max": str(datetime.datetime.today().year),
+         "step": '1',
+         "value": str(datetime.datetime.today().year),
+         "unit": "",
+         "labelText": "Garage Year Built",
+         "tooltip": "Year garage was built"
+         },
+
+        {"name": "GarageCars",
+         "min": '0',
+         "max": '15',
+         "step": '1',
+         "value": '0',
+         "unit": "",
+         "labelText": "Garage Capacity",
+         "tooltip": "Size of garage in car capacity"
+         },
+
+        {"name": "GarageArea",
+         "min": '0',
+         "max": '3000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Garage Area",
+         "tooltip": "Size of garage in square feet"
+         },
+
+        {"name": "WoodDeckSF",
+         "min": '0',
+         "max": '2000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Wood deck area",
+         "tooltip": "Wood deck area in square feet"
+         },
+
+        {"name": "OpenPorchSF",
+         "min": '0',
+         "max": '1250',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Open Porch Area",
+         "tooltip": "Open porch area in square feet"
+         },
+
+        {"name": "EnclosedPorch",
+         "min": '0',
+         "max": '1000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Enclosed porch area",
+         "tooltip": "Enclosed porch area in square feet"
+         },
+
+        {"name": "3SsnPorch",
+         "min": '0',
+         "max": '1000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Three season porch area",
+         "tooltip": "Three season porch area in square feet"
+         },
+
+        {"name": "ScreenPorch",
+         "min": '0',
+         "max": '1000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Screen porch area",
+         "tooltip": "Screen porch area in square feet"
+         },
+
+        {"name": "1stFlrSF",
+         "min": '200',
+         "max": '7000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "First Floor Area",
+         "tooltip": "First Floor area in square feet"
+         },
+
+        {"name": "2ndFlrSF",
+         "min": '0',
+         "max": '5000',
+         "step": '5',
+         "value": '0',
+         "unit": "sq. ft",
+         "labelText": "Second Floor Area",
+         "tooltip": "Second Floor area in square feet"
+         },
+
+    ]
 
     elem_render_order = ['MSZoning',
                      'OverallQual',
                      'OverallCond',
-                     'MasVnrType',
-                     'MasVnrArea',
-                     'YearBuilt',
-                     'LotArea',
                      'ExterCond',
+                     'YearBuilt',
+                     'YearRemodAdd',
+                     'LotArea',
+                     'GrLivArea',
+                     '1stFlrSF',
+                     '2ndFlrSF',
                      'BsmtQual',
                      'BsmtExposure',
                      'BsmtFinType1',
-                     'TotalBsmtSF'
+                     'BsmtFullBath',
+                     'TotalBsmtSF',
+                     'HeatingQC',
+                     'CentralAir',
+                     'BedroomAbvGr',
+                     'KitchenAbvGr',
+                     'KitchenQual',
+                     'Functional',
+                     'Fireplaces',
+                     'GarageYrBlt',
+                     'GarageCars',
+                     'GarageArea',
+                     'PavedDrive',
+                     'WoodDeckSF',
+                     'OpenPorchSF',
+                     'EnclosedPorch',
+                     '3SsnPorch',
+                     'ScreenPorch',
+                     'MasVnrType',
+                     'MasVnrArea',
 
                      ]
 
@@ -263,23 +512,27 @@ def estimate(request):
     for elem in elem_render_order:
         for menu in dropdown_menus:
             if elem == menu['name']:
-                cooked_elems.append(dropdown_menu_template(menu))
+                cooked_elems.append(dropdown_menu_factory(menu))
                 continue
 
         for slider in range_sliders:
             if elem == slider['name']:
-                cooked_elems.append(range_slider_template(slider))
+                cooked_elems.append(range_slider_factory(slider))
                 continue
 
 
-    context = {'pred_result': {},
+    context = {'pred_args': {},
                'cooked_elems': cooked_elems,
+               'prediction': None,
+
                }
 
     for key, value in request.POST.items():
-        context['pred_result'][key] = value
+        context['pred_args'][key] = value
 
-    #context['pred_result']['graph_img'] = image(request)
-    print(context['pred_result'])
-    #context = {'pred_result': {"text":request.POST.get('choice','None')}}
+    if len(context['pred_args']) > 0:
+        del context['pred_args']['csrfmiddlewaretoken']
+        context['prediction'] = runEstimate(context['pred_args'])
+
+    print(context['pred_args'])
     return render(request, 'predict/estimate.html', context)

@@ -1,18 +1,13 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn import linear_model
-from sklearn.metrics import r2_score
-from sklearn.metrics import make_scorer
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.base import BaseEstimator, TransformerMixin
-import matplotlib
+import pickle
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning,)
 warnings.filterwarnings("ignore", category=UserWarning,)
@@ -30,13 +25,12 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
                      normalize=False)
     reg.fit(train_data, train_labels)
 
+    filename = 'savedModels/l_reg_model.sav'
+    pickle.dump(reg, open(filename, 'wb'))
 
     pred = reg.predict(test_data)
     print("Linear Regression")
-    try:
-        print("RMSLE ", mean_squared_log_error(test_labels, pred))
-    except:
-        pass
+    print("RMSLE ", mean_squared_log_error(test_labels, pred))
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
@@ -82,6 +76,8 @@ def lasso(train_data, train_labels, test_data, test_labels,
 
     reg.fit(train_data, train_labels)
 
+    filename = 'savedModels/lasso_model.sav'
+    pickle.dump(reg, open(filename, 'wb'))
 
     pred = reg.predict(test_data)
     print("Lasso")
@@ -126,6 +122,8 @@ def bayesian_ridge(train_data, train_labels, test_data, test_labels,
 
 
     reg.fit(train_data, train_labels)
+    filename = 'savedModels/b_ridge_model.sav'
+    pickle.dump(reg, open(filename, 'wb'))
 
     pred = reg.predict(test_data)
     print("Bayesian Ridge")
@@ -168,6 +166,8 @@ def ridge(train_data, train_labels, test_data, test_labels,
 
 
     reg.fit(train_data, train_labels)
+    filename = 'savedModels/ridge_model.sav'
+    pickle.dump(reg, open(filename, 'wb'))
 
     pred = reg.predict(test_data)
     print("Ridge")
@@ -185,53 +185,10 @@ def ridge(train_data, train_labels, test_data, test_labels,
     return pred, v_pred
     ##########################################################################
 
-def gboost(train_data, train_labels, test_data, test_labels,
-                     pred_set=None,pred_set_id=None):
-    # from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
-    # alpha = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
-    # fit_intercept = [True, False]
-    # solver = ['svd', 'cholesky', 'lsqr', 'sparse_cg']
-    # max_iter = [x for x in np.arange(start=100, stop=5000, step=100)]
-    # tol = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
-    # random_grid = {'alpha': alpha,
-    #                'fit_intercept': fit_intercept,
-    #                'solver': solver,
-    #                'max_iter': max_iter,
-    #                'tol': tol}
-    from sklearn.ensemble import GradientBoostingRegressor
-    reg = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
-                                       max_depth=4, max_features='sqrt',
-                                       min_samples_leaf=15, min_samples_split=10,
-                                       loss='huber', random_state=5)
-
-
-
-    # rf_random = RandomizedSearchCV(estimator=reg, param_distributions=random_grid, n_iter=2000, cv=3, verbose=2,random_state=42, n_jobs=-1)  # Fit the random search model
-    # rf_random.fit(train_data, train_labels)
-    # print(rf_random.best_params_)
-    reg.fit(train_data, train_labels)
-
-    pred = reg.predict(test_data)
-    print("GBOOST")
-    print("RMSLE ", mean_squared_log_error(test_labels, pred))
-    print("RMSE ", mean_squared_error(test_labels, pred))
-    print("Variance ", explained_variance_score(test_labels, pred))
-
-    v_pred = []
-    if pred_set is not None:
-        v_pred = reg.predict(pred_set)
-        v_pred = np.exp(v_pred)
-        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
-        res.to_csv("predictionsGBOOST.csv", index=False)
-
-    return pred, v_pred
-    ##########################################################################
-
-
 
 def feature_engineering(d):
     d['TotalSF'] = d['TotalBsmtSF'] + d['1stFlrSF'] + d['2ndFlrSF']
-    d = d.drop(columns=['1stFlrSF', '2ndFlrSF'])
+    d = d.drop(columns=['1stFlrSF', '2ndFlrSF','TotalBsmtSF'])
 
     #d['Bathrooms'] = d['BsmtFullBath'] + d['BsmtHalfBath'] + d['FullBath'] + d['HalfBath']
     #d = d.drop(columns=['BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath'])
@@ -272,20 +229,6 @@ def data_pipeline(d):
         except KeyError:
             print("Warning, KeyError, attrib not found in data")
             continue
-
-    # scale_log_attribs = ['LotFrontage','MasVnrArea','LotArea',
-    #                      '1stFlrSF','2ndFlrSF','BsmtFinSF1','BsmtFinSF2',
-    #                      'BsmtUnfSF','GrLivArea',
-    #                      'OpenPorchSF','TotalBsmtSF']
-    #
-    # for att in scale_log_attribs:
-    #     try:
-    #         d[att] = d[att].apply(np.log)
-    #         d[att] = d[att].replace(-np.inf, 0)
-    #     except KeyError:
-    #         print("Warning, KeyError, attrib not found in data")
-    #         continue
-
 
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
     factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd',
@@ -398,12 +341,13 @@ def main():
 
     stats.summary(ols, train_data, train_labels, xlabels=xlabels)
 
+
     #exit()
     pred1, vpred1 = linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred2, vpred2 = lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred3, vpred3 = ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred4, vpred4 = bayesian_ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
-    #pred5, vpred5 = gboost(train_data, train_labels, test_data, test_labels, pred_set, pred_set_id)
+
 
     pred = (pred1 + pred2 + pred3 + pred4) / 4
     vpred = (vpred1 + vpred2 + vpred3 + vpred4) / 4
@@ -419,7 +363,12 @@ def main():
 
 data = pd.read_csv('iowaHomes.csv')
 
+print(pd.DataFrame(data.iloc[0]))
+exit()
 
+
+print(data['2ndFlrSF'].value_counts().sort_index())
+print(data['2ndFlrSF'].describe())
 
 data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
 data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
@@ -439,8 +388,8 @@ dropped_attribs = ["Id", "Alley",
                        'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
                         'Exterior2nd',
                        #'1stFlrSF', '2ndFlrSF',
-
-                       #'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
+                        'BsmtFinType2',
+                       'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
                        # estimate the price of a house based on these as the house hasn't been sold yet
 
                        ]
