@@ -5,6 +5,7 @@ import pickle
 import pandas as pd
 import os
 
+
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
     #return render(request, 'predict/index.html')
@@ -78,6 +79,7 @@ def range_slider_factory(slider):
         .replace("{{slider.tooltip}}",slider['tooltip'])\
 
 
+
 def dropdown_menu_factory(menu):
     r = '<div class="rowTab">' \
         '   <script>' \
@@ -102,7 +104,7 @@ def dropdown_menu_factory(menu):
 
 
 
-def runEstimate(args):
+def run_estimate(args):
     models = ['l_reg_model.sav', 'lasso_model.sav','ridge_model.sav','b_ridge_model.sav']
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -530,9 +532,11 @@ def EstimateView(request):
     for key, value in request.POST.items():
         context['pred_args'][key] = value
 
+    print(context['pred_args'])
+
     if len(context['pred_args']) > 0:
         del context['pred_args']['csrfmiddlewaretoken']
-        context['prediction'] = runEstimate(context['pred_args'])
+        context['prediction'] = run_estimate(context['pred_args'])
 
-    print(context['pred_args'])
+
     return render(request, 'predict/estimate.html', context)

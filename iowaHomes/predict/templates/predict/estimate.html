@@ -18,7 +18,6 @@
 
     <h1>Estimated House Value: {% if prediction %} ${{prediction}} {% endif %}</h1>
 
-
     <div id="predict-form-outer">
         <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
         <form id="predict-input-form" action="{% url 'predict:estimate' %}" method="post">

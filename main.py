@@ -7,8 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
-import pickle
-import warnings
+import pickle, warnings, os
 warnings.filterwarnings("ignore", category=FutureWarning,)
 warnings.filterwarnings("ignore", category=UserWarning,)
 
@@ -199,7 +198,7 @@ def feature_engineering(d):
     return d
 
 
-def data_pipeline(d):
+def fill_missing_val(d):
     custom_cat_attribs = ['FireplaceQu', "PoolQC", 'BsmtQual', 'BsmtCond',
                           'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
                           'GarageType', 'GarageQual', 'GarageFinish',
@@ -209,7 +208,6 @@ def data_pipeline(d):
         try:
             d[att] = naImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
-            print("Warning, KeyError, attrib not found in data")
             continue
 
     cat_attribs = list(d.select_dtypes(include=[np.object]).columns)
@@ -218,7 +216,6 @@ def data_pipeline(d):
         try:
             d[att] = freqImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
-            print("Warning, KeyError, attrib not found in data")
             continue
 
     num_attribs = list(d.select_dtypes(include=[np.number]).columns)
@@ -227,26 +224,111 @@ def data_pipeline(d):
         try:
             d[att] = numImputer.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
-            print("Warning, KeyError, attrib not found in data")
             continue
 
+
+
+    return d
+
+
+def encode_values(d):
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
-    factorization_attribs = factorization_attribs + ['YearBuilt','YearRemodAdd',
-                                                     'GarageYrBlt','MSSubClass']
+    factorization_attribs = factorization_attribs + ['YearBuilt', 'YearRemodAdd',
+                                                     'GarageYrBlt', 'MSSubClass']
     enc = OrdinalEncoder()
     for att in factorization_attribs:
         try:
             d[att] = enc.fit_transform(d[att].values.reshape(-1, 1))
         except KeyError:
-            print("Warning, KeyError, attrib not found in data")
-        continue
+            continue
 
     return d
 
 
+def log_scale_values(d):
+
+    scale_log_attribs = ['LotFrontage', 'MasVnrArea', 'LotArea',
+                         '1stFlrSF', '2ndFlrSF', 'BsmtFinSF1', 'BsmtFinSF2',
+                         'BsmtUnfSF', 'GrLivArea',
+                         'OpenPorchSF', 'TotalBsmtSF']
+
+    for att in scale_log_attribs:
+        try:
+            d[att] = d[att].apply(np.log)
+            d[att] = d[att].replace(-np.inf, 0)
+        except KeyError:
+            continue
+
+    return d
+
+
+def run_prediction(args):
+
+    args_df = pd.DataFrame(columns=list(args.keys()))
+    args_df.loc[0] = list(args.values())
+
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'savedModels/28features')
+
+
+    training_data = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'savedModels/training_data.csv'))
+
+    print(training_data.info())
+
+    exit()
+
+    args_df = pd.concat([training_data, args_df])
+
+    args_df = encode_values(args_df)
+    args_df = log_scale_values(args_df)
+
+    args_df = args_df[len(training_data):]
+
+    print(args_df)
+    exit()
+
+    n_models = 0
+    pred = 0
+    for file in os.listdir(path):
+        if os.path.isfile(os.path.join(path, file)):
+
+            reg = pickle.load(open(os.path.join(path, file), 'rb'))
+            pred = pred + reg.predict(df)
+            n_models += 1
+
+    print(n_models)
+    print(path)
+
+    return pred / n_models
+
+
+
 def main():
 
+    data = pd.read_csv('iowaHomes.csv')
 
+    data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
+    data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
+    data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
+
+    data = data.drop(data[(data['YearBuilt'] < 1960) & (data['SalePrice'] > 300000)].index)
+
+    data = data.drop(data[data['LotArea'] > 35000].index)
+
+    data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
+
+    data = data.drop(data[(data['SalePrice'] > 550000)].index)
+
+    dropped_attribs = ["Id", "Alley",
+                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
+                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
+                       'Exterior2nd',
+                       # '1stFlrSF', '2ndFlrSF',
+                       'BsmtFinType2',
+                       # 'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
+                       # estimate the price of a house based on these as the house hasn't been sold yet
+
+                       ]
+    data = data.drop(columns=dropped_attribs)
 
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
 
@@ -257,7 +339,7 @@ def main():
     test_labels = test_data['SalePrice'].apply(np.log)
     test_data = test_data.drop(columns='SalePrice')
 
-    train_data = data_pipeline(train_data)
+    train_data = fill_missing_val(train_data)
     train_data = feature_engineering(train_data)
 
     # for column in train_data:
@@ -271,31 +353,26 @@ def main():
     #     plt.close()
     # exit()
 
-    test_data = data_pipeline(test_data)
+    test_data = fill_missing_val(test_data)
     test_data = feature_engineering(test_data)
-    train_test_data = pd.concat([train_data,test_data])
+    train_test_data = pd.concat([train_data, test_data]) #data joined to perform factorization and scaling
+    train_test_data.to_csv('savedModels/training_data.csv') #saving out data with no missing values to use when making predictions in production
 
     pred_set = pd.read_csv('test.csv')
     pred_set_id = pred_set['Id']
     pred_set = pred_set.drop(columns=dropped_attribs)
-    pred_set = data_pipeline(pred_set)
+    pred_set = fill_missing_val(pred_set)
     pred_set = feature_engineering(pred_set)
 
-    scale_log_attribs = ['LotFrontage', 'MasVnrArea', 'LotArea',
-                          '1stFlrSF','2ndFlrSF','BsmtFinSF1','BsmtFinSF2',
-                          'BsmtUnfSF','GrLivArea',
-                          'OpenPorchSF','TotalBsmtSF']
 
-    for att in scale_log_attribs:
-        try:
-            train_test_data[att] = train_test_data[att].apply(np.log)
-            train_test_data[att] = train_test_data[att].replace(-np.inf, 0)
+    train_test_data = encode_values(train_test_data)
+    pred_set = encode_values(pred_set)
 
-            pred_set[att] = pred_set[att].apply(np.log)
-            pred_set[att] = pred_set[att].replace(-np.inf, 0)
-        except KeyError:
-            print("Warning, KeyError, attrib not found in data")
-            continue
+    train_test_data = log_scale_values(train_test_data)
+    pred_set = log_scale_values(pred_set)
+
+
+
 
     test_data = train_test_data[len(train_data):]
     train_data = train_test_data[:len(train_data)]
@@ -341,7 +418,7 @@ def main():
 
     stats.summary(ols, train_data, train_labels, xlabels=xlabels)
 
-
+    #print(train_data.iloc[0])
     #exit()
     pred1, vpred1 = linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
     pred2, vpred2 = lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
@@ -361,39 +438,39 @@ def main():
     res = pd.DataFrame({"Id": pred_set_id, "SalePrice": vpred})
     res.to_csv("predictionsCombined.csv", index=False)
 
-data = pd.read_csv('iowaHomes.csv')
 
-print(pd.DataFrame(data.iloc[0]))
-exit()
+if __name__ == "__main__":
+    args = {'MSZoning': 'C', 'OverallQual': '8',
+            'OverallCond': '10', 'ExterCond': 'Ex',
+            'YearBuilt': '2019', 'YearRemodAdd': '1981',
+            'LotArea': '1750',
+            'GrLivArea': '590',
+            '1stFlrSF': '805',
+            '2ndFlrSF': '585',
+            'BsmtQual': 'Ex',
+            'BsmtExposure': 'Gd',
+            'BsmtFinType1': 'GLQ',
+            'BsmtFullBath': '2',
+            'TotalBsmtSF': '2620',
+            'HeatingQC': 'Ex',
+            'CentralAir': 'Y',
+            'BedroomAbvGr': '7',
+            'KitchenAbvGr': '6',
+            'KitchenQual': 'Ex',
+            'Functional': 'Typ',
+            'Fireplaces': '3',
+            'GarageYrBlt': '2018',
+            'GarageCars': '3',
+            'GarageArea': '910',
+            'PavedDrive': 'Y',
+            'WoodDeckSF': '360',
+            'OpenPorchSF': '205',
+            'EnclosedPorch': '165',
+            '3SsnPorch': '270',
+            'ScreenPorch': '400',
+            'MasVnrType': 'BrkCmn',
+            'MasVnrArea': '1040'}
 
-
-print(data['2ndFlrSF'].value_counts().sort_index())
-print(data['2ndFlrSF'].describe())
-
-data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
-data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
-data = data.drop(data[(data['OverallQual'] == 9.0) & (data['SalePrice'] > 430000)].index)
-
-data = data.drop(data[(data['YearBuilt'] < 1960) & (data['SalePrice'] > 300000)].index)
-
-data = data.drop(data[data['LotArea'] > 35000].index)
-
-data = data.drop(data[(data['MSZoning'] == "RM") & (data['SalePrice'] > 300000)].index)
-
-data = data.drop(data[(data['SalePrice'] > 550000)].index)
-
-
-dropped_attribs = ["Id", "Alley",
-                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
-                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
-                        'Exterior2nd',
-                       #'1stFlrSF', '2ndFlrSF',
-                        'BsmtFinType2',
-                       'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
-                       # estimate the price of a house based on these as the house hasn't been sold yet
-
-                       ]
-data = data.drop(columns=dropped_attribs)
-
-
-main()
+    run_prediction(args)
+    exit()
+    #main()
