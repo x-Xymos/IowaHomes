@@ -8,6 +8,9 @@ from sklearn.metrics import mean_squared_log_error
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
 import pickle, warnings, os
+from regressors import stats
+import cProfile
+
 warnings.filterwarnings("ignore", category=FutureWarning,)
 warnings.filterwarnings("ignore", category=UserWarning,)
 
@@ -17,8 +20,7 @@ pd.set_option('display.width', 1000)
 pd.options.mode.chained_assignment = None
 
 
-def linear_reg(train_data, train_labels, test_data, test_labels,
-                     pred_set=None,pred_set_id=None):
+def linear_reg(train_data, train_labels, test_data, test_labels):
 
     reg = linear_model.LinearRegression(copy_X=True, fit_intercept=True, n_jobs=-1,
                      normalize=False)
@@ -27,24 +29,19 @@ def linear_reg(train_data, train_labels, test_data, test_labels,
     filename = 'savedModels/l_reg_model.sav'
     pickle.dump(reg, open(filename, 'wb'))
 
+
+
+
     pred = reg.predict(test_data)
     print("Linear Regression")
     print("RMSLE ", mean_squared_log_error(test_labels, pred))
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
-    v_pred = []
-    if pred_set is not None:
-        v_pred = reg.predict(pred_set)
-        v_pred = np.exp(v_pred)
-        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
-        res.to_csv("predictionsLinearReg.csv", index=False)
-
-    return pred, v_pred
+    return pred
 
 
-def lasso(train_data, train_labels, test_data, test_labels,
-                     pred_set=None,pred_set_id=None):
+def lasso(train_data, train_labels, test_data, test_labels):
 
     from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
     cv = [x for x in np.arange(start=2, stop=15, step=1)]
@@ -84,18 +81,11 @@ def lasso(train_data, train_labels, test_data, test_labels,
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
-    v_pred = []
-    if pred_set is not None:
-        v_pred = reg.predict(pred_set)
-        v_pred = np.exp(v_pred)
-        res = pd.DataFrame({"Id": pred_set_id, "SalePrice": v_pred})
-        res.to_csv("predictionsLasso.csv", index=False)
 
-    return pred, v_pred
+    return pred
 
 
-def bayesian_ridge(train_data, train_labels, test_data, test_labels,
-                     pred_set=None,pred_set_id=None):
+def bayesian_ridge(train_data, train_labels, test_data, test_labels):
 
     from sklearn.model_selection import RandomizedSearchCV
 
@@ -130,19 +120,13 @@ def bayesian_ridge(train_data, train_labels, test_data, test_labels,
     print("RMSE ",mean_squared_error(test_labels, pred))
     print("Variance ",explained_variance_score(test_labels, pred))
 
-    v_pred = []
-    if pred_set is not None:
-        v_pred = reg.predict(pred_set)
-        v_pred = np.exp(v_pred)
-        res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
-        res.to_csv("predictionsBayesianRidge.csv", index=False)
 
-    return pred, v_pred
+
+    return pred
     ##########################################################################
 
 
-def ridge(train_data, train_labels, test_data, test_labels,
-                     pred_set=None,pred_set_id=None):
+def ridge(train_data, train_labels, test_data, test_labels):
     # from sklearn.model_selection import RandomizedSearchCV  # Number of trees in random forest
     # alpha = [x for x in np.arange(start=0.0, stop=1, step=0.01)]
     # fit_intercept = [True, False]
@@ -174,26 +158,19 @@ def ridge(train_data, train_labels, test_data, test_labels,
     print("RMSE ",mean_squared_error(test_labels, pred))
     print("Variance ",explained_variance_score(test_labels, pred))
 
-    v_pred = []
-    if pred_set is not None:
-        v_pred = reg.predict(pred_set)
-        v_pred = np.exp(v_pred)
-        res = pd.DataFrame({"Id":pred_set_id,"SalePrice":v_pred})
-        res.to_csv("predictionsRidge.csv", index=False)
-
-    return pred, v_pred
+    return pred
     ##########################################################################
 
 
 def feature_engineering(d):
-    d['TotalSF'] = d['TotalBsmtSF'] + d['1stFlrSF'] + d['2ndFlrSF']
-    d = d.drop(columns=['1stFlrSF', '2ndFlrSF','TotalBsmtSF'])
+    d['TotalSF'] = d['TotalBsmtSF'].astype(np.int) + d['1stFlrSF'].astype(np.int) + d['2ndFlrSF'].astype(np.int)
+    #d = d.drop(columns=['1stFlrSF', '2ndFlrSF','TotalBsmtSF'])
 
     #d['Bathrooms'] = d['BsmtFullBath'] + d['BsmtHalfBath'] + d['FullBath'] + d['HalfBath']
     #d = d.drop(columns=['BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath'])
 
-    d['PorchSF'] = d['OpenPorchSF'] + d['EnclosedPorch'] + d['3SsnPorch'] + d['ScreenPorch']
-    d = d.drop(columns=['OpenPorchSF', 'EnclosedPorch','3SsnPorch','ScreenPorch'])
+    d['PorchSF'] = d['OpenPorchSF'].astype(np.int) + d['EnclosedPorch'].astype(np.int) + d['3SsnPorch'].astype(np.int) + d['ScreenPorch'].astype(np.int)
+    #d = d.drop(columns=['OpenPorchSF', 'EnclosedPorch','3SsnPorch','ScreenPorch'])
 
     return d
 
@@ -232,14 +209,22 @@ def fill_missing_val(d):
 
 
 def encode_values(d):
+
     factorization_attribs = list(d.select_dtypes(include=[np.object]).columns)
     factorization_attribs = factorization_attribs + ['YearBuilt', 'YearRemodAdd',
-                                                     'GarageYrBlt', 'MSSubClass']
+                                                     'GarageYrBlt']
+
+
+    d['YearBuilt'] = d['YearBuilt'].astype(np.int)
+    d['YearRemodAdd'] = d['YearRemodAdd'].astype(np.int)
+    d['GarageYrBlt'] = d['GarageYrBlt'].astype(np.int)
+
+
     enc = OrdinalEncoder()
     for att in factorization_attribs:
         try:
             d[att] = enc.fit_transform(d[att].values.reshape(-1, 1))
-        except KeyError:
+        except:
             continue
 
     return d
@@ -254,10 +239,29 @@ def log_scale_values(d):
 
     for att in scale_log_attribs:
         try:
-            d[att] = d[att].apply(np.log)
-            d[att] = d[att].replace(-np.inf, 0)
-        except KeyError:
+            d[att] = d[att].astype(float).apply(np.log)
+            d[att] = d[att].astype(float).replace(-np.inf, 0)
+        except:
             continue
+
+    return d
+
+
+def drop_colums(d):
+    dropped_attribs = ["Alley",
+                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
+                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
+                       'Exterior2nd',
+
+                       '1stFlrSF', '2ndFlrSF', 'TotalBsmtSF',
+                       'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch',
+
+                       'BsmtFinType2',
+                       'YrSold', 'MoSold', 'SaleCondition', 'SaleType'  # these are dropped because we can't
+                       # estimate the price of a house based on these as the house hasn't been sold yet
+
+                       ]
+    d = d.drop(columns=dropped_attribs)
 
     return d
 
@@ -270,41 +274,50 @@ def run_prediction(args):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'savedModels/28features')
 
 
-    training_data = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'savedModels/training_data.csv'))
-
-    print(training_data.info())
-
-    exit()
+    training_data = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'savedModels/training_data.csv'), keep_default_na=False)
 
     args_df = pd.concat([training_data, args_df])
 
-    args_df = encode_values(args_df)
-    args_df = log_scale_values(args_df)
 
+    args_df = args_df.reset_index(drop=True)
+
+    args_df = feature_engineering(args_df)
+    args_df = drop_colums(args_df)
+
+    args_df = args_df.dropna(axis=1)
+
+    args_df = encode_values(args_df)
+
+
+    args_df = log_scale_values(args_df)
     args_df = args_df[len(training_data):]
 
-    print(args_df)
-    exit()
-
     n_models = 0
-    pred = 0
+    preds = 0
     for file in os.listdir(path):
         if os.path.isfile(os.path.join(path, file)):
-
             reg = pickle.load(open(os.path.join(path, file), 'rb'))
-            pred = pred + reg.predict(df)
+            pred = reg.predict(args_df)
+            print(pred)
+            preds = preds + pred
             n_models += 1
 
-    print(n_models)
-    print(path)
 
-    return pred / n_models
+    preds = preds / n_models
+    print(preds)
+    print(np.exp(preds))
+    import math
+    print(math.exp(preds))
+
+    return 0
 
 
 
 def main():
 
     data = pd.read_csv('iowaHomes.csv')
+
+    data = data.drop(columns='Id')
 
     data = data.drop(data[(data['OverallQual'] < 5.0) & (data['SalePrice'] > 200000)].index)
     data = data.drop(data[(data['OverallQual'] == 8.0) & (data['SalePrice'] > 470000)].index)
@@ -318,17 +331,7 @@ def main():
 
     data = data.drop(data[(data['SalePrice'] > 550000)].index)
 
-    dropped_attribs = ["Id", "Alley",
-                       "Street", 'PoolQC', 'Utilities', 'RoofStyle',
-                       'RoofMatl', "PoolArea", 'BsmtFinSF1', 'BsmtFinSF2', 'GarageQual',
-                       'Exterior2nd',
-                       # '1stFlrSF', '2ndFlrSF',
-                       'BsmtFinType2',
-                       # 'YrSold','MoSold','SaleCondition','SaleType' #these are dropped because we can't
-                       # estimate the price of a house based on these as the house hasn't been sold yet
 
-                       ]
-    data = data.drop(columns=dropped_attribs)
 
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
 
@@ -340,60 +343,30 @@ def main():
     test_data = test_data.drop(columns='SalePrice')
 
     train_data = fill_missing_val(train_data)
-    train_data = feature_engineering(train_data)
-
-    # for column in train_data:
-    #     plt.scatter(train_data[column], train_labels,  alpha=0.5)
-    #
-    #     plt.xlabel(column)
-    #     plt.ylabel('SalePrice')
-    #     fig = matplotlib.pyplot.gcf()
-    #     fig.set_size_inches(18.5, 10.5)
-    #     plt.savefig('plots/scatterplots/scatter_' + str(column) + '.png')
-    #     plt.close()
-    # exit()
-
     test_data = fill_missing_val(test_data)
+
+    train_test_data = pd.concat([train_data, test_data])
+    train_test_data.to_csv('savedModels/training_data.csv', index=False) #saving out data with no missing values to use when making predictions in production
+
+
+    train_data = feature_engineering(train_data)
     test_data = feature_engineering(test_data)
+
+
     train_test_data = pd.concat([train_data, test_data]) #data joined to perform factorization and scaling
-    train_test_data.to_csv('savedModels/training_data.csv') #saving out data with no missing values to use when making predictions in production
 
-    pred_set = pd.read_csv('test.csv')
-    pred_set_id = pred_set['Id']
-    pred_set = pred_set.drop(columns=dropped_attribs)
-    pred_set = fill_missing_val(pred_set)
-    pred_set = feature_engineering(pred_set)
 
+    train_test_data = drop_colums(train_test_data)
 
     train_test_data = encode_values(train_test_data)
-    pred_set = encode_values(pred_set)
-
     train_test_data = log_scale_values(train_test_data)
-    pred_set = log_scale_values(pred_set)
-
-
 
 
     test_data = train_test_data[len(train_data):]
     train_data = train_test_data[:len(train_data)]
 
-
-    # import seaborn as sns
-    # for column in data:
-    #     try:
-    #         sns.distplot(data[column], color='blue', axlabel=column)
-    #         fig = matplotlib.pyplot.gcf()
-    #         fig.set_size_inches(18.5, 10.5)
-    #         plt.savefig('plots/histograms/hist2_' + str(column) + '.png',dpi=100)
-    #         plt.close()
-    #     except:
-    #         pass
-    #
-    # exit()
-
     while True:
-        from sklearn import linear_model
-        from regressors import stats
+
         ols = linear_model.LinearRegression()
 
         ols = ols.fit(train_data, train_labels)
@@ -406,71 +379,71 @@ def main():
             if h < statCoef[x+1]:
                 h = statCoef[x+1]
 
-                #0.06
         if h > 0.05:
             idx = statCoef.index(h) - 1
             train_data = train_data.drop(columns=xlabels[idx])
             test_data = test_data.drop(columns=xlabels[idx])
-            pred_set = pred_set.drop(columns=xlabels[idx])
 
         else:
             break
 
     stats.summary(ols, train_data, train_labels, xlabels=xlabels)
 
-    #print(train_data.iloc[0])
-    #exit()
-    pred1, vpred1 = linear_reg(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
-    pred2, vpred2 = lasso(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
-    pred3, vpred3 = ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
-    pred4, vpred4 = bayesian_ridge(train_data, train_labels, test_data, test_labels,pred_set,pred_set_id)
+    pred1 = linear_reg(train_data, train_labels, test_data, test_labels)
+    pred2 = lasso(train_data, train_labels, test_data, test_labels)
+    pred3 = ridge(train_data, train_labels, test_data, test_labels)
+    pred4 = bayesian_ridge(train_data, train_labels, test_data, test_labels)
 
 
     pred = (pred1 + pred2 + pred3 + pred4) / 4
-    vpred = (vpred1 + vpred2 + vpred3 + vpred4) / 4
 
     print("Combined Prediction")
     print("RMSLE ", mean_squared_log_error(test_labels, pred))
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
-
-    res = pd.DataFrame({"Id": pred_set_id, "SalePrice": vpred})
-    res.to_csv("predictionsCombined.csv", index=False)
-
+    print(pred)
 
 if __name__ == "__main__":
-    args = {'MSZoning': 'C', 'OverallQual': '8',
-            'OverallCond': '10', 'ExterCond': 'Ex',
-            'YearBuilt': '2019', 'YearRemodAdd': '1981',
-            'LotArea': '1750',
-            'GrLivArea': '590',
-            '1stFlrSF': '805',
-            '2ndFlrSF': '585',
-            'BsmtQual': 'Ex',
-            'BsmtExposure': 'Gd',
+    args = {'MSZoning': 'C',
+            'OverallQual': '7',
+            'OverallCond': '5',
+            'ExterCond': 'TA',
+            'YearBuilt': '2003',
+            'YearRemodAdd': '2003',
+            'LotArea': '8450',
+            'GrLivArea': '1710',
+            '1stFlrSF': '856',
+            '2ndFlrSF': '854',
+            'BsmtQual': 'Gd',
+            'BsmtExposure': 'No',
             'BsmtFinType1': 'GLQ',
-            'BsmtFullBath': '2',
-            'TotalBsmtSF': '2620',
+            'BsmtFullBath': '1',
+            'TotalBsmtSF': '856',
             'HeatingQC': 'Ex',
             'CentralAir': 'Y',
-            'BedroomAbvGr': '7',
-            'KitchenAbvGr': '6',
-            'KitchenQual': 'Ex',
+            'BedroomAbvGr': '3',
+            'KitchenAbvGr': '1',
+            'KitchenQual': 'Gd',
             'Functional': 'Typ',
-            'Fireplaces': '3',
-            'GarageYrBlt': '2018',
-            'GarageCars': '3',
-            'GarageArea': '910',
+            'Fireplaces': '0',
+            'GarageYrBlt': '2003',
+            'GarageCars': '2',
+            'GarageArea': '548',
             'PavedDrive': 'Y',
-            'WoodDeckSF': '360',
-            'OpenPorchSF': '205',
-            'EnclosedPorch': '165',
-            '3SsnPorch': '270',
-            'ScreenPorch': '400',
-            'MasVnrType': 'BrkCmn',
-            'MasVnrArea': '1040'}
+            'WoodDeckSF': '0',
+            'OpenPorchSF': '61',
+            'EnclosedPorch': '0',
+            '3SsnPorch': '0',
+            'ScreenPorch': '0',
+            'MasVnrType': 'BrkFace',
+            'MasVnrArea': '196'}
 
-    run_prediction(args)
-    exit()
+    #pr = cProfile.Profile()
+    #pr.enable()
+
     #main()
+
+    #pr.disable()
+    #pr.print_stats(sort='time')
+    print(run_prediction(args))
