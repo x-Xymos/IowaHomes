@@ -76,22 +76,27 @@ def ridge(train_data, train_labels, save_model=False):
     return model
 
 
-def save_models(models, train_data, train_labels):
-
+def save_models_to_file(models):
+    
+    train_data, train_labels, test_data, test_labels = process_data(save_train_data=True)
+    
     for model in models:
         trained_m = model['func'](train_data, train_labels)
         filename = 'iowaHomes/iowaHomes/predictionModels/' + model['name'] + ".sav"
         pickle.dump(trained_m, open(filename, 'wb'))
-        print("Saved " + model['name'] + "to " + filename)
+        print("Saved " + model['name'] + " to " + filename)
 
 
-def load_models(models):
-    # for model in models:
-    #     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    #     path = os.path.join(BASE_DIR, 'iowaHomes/predictionModels/')
-    #     reg = pickle.load(open(path + model, 'rb'))
+def load_models_from_file(models):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    return 0
+    loaded_models = []
+    for model in models:
+        path = os.path.join(BASE_DIR, 'IowaHomes/iowaHomes/iowaHomes/predictionModels/')
+        path = os.path.join(path, model['name'])
+        loaded_models.append(pickle.load(open(path, 'rb')))
+
+    return loaded_models
 
 
 def feature_engineering(d):
@@ -107,7 +112,7 @@ def feature_engineering(d):
     return d
 
 
-def fill_missing_val(d):
+def fill_missing_values(d):
     custom_cat_attribs = ['FireplaceQu', "PoolQC", 'BsmtQual', 'BsmtCond',
                           'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
                           'GarageType', 'GarageQual', 'GarageFinish',
@@ -229,7 +234,10 @@ def model_score(name, model, test_data, test_labels):
     print("RMSE ", mean_squared_error(test_labels, pred))
     print("Variance ", explained_variance_score(test_labels, pred))
 
-def score_models(models, train_data, train_labels, test_data, test_labels, load_models=False):
+
+def score_models(models, load_models=False):
+
+    train_data, train_labels, test_data, test_labels = process_data()
 
     if load_models:
         return 0
@@ -239,93 +247,23 @@ def score_models(models, train_data, train_labels, test_data, test_labels, load_
             model_score(model['name'],trained_m, test_data, test_labels)
 
 
-def process_data(pred_data=None):
-    data = pd.read_csv('iowaHomes.csv')
+def run_prediction(models, pred_data, load_models=False):
 
-    data = data.drop(columns='Id')
+    if load_models:
+        #train_data, train_labels, test_data, test_labels = process_data()
+        
+        droppedCols = pickle.load(open('iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav', 'rb'))
+        featureOrder = pickle.load(open('iowaHomes/iowaHomes/predictionModels/training_data/featureOrder.sav', 'rb'))
 
-    data = drop_outliers(data)
-
-    train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
-
-    if pred_data is not None:
-
-        pred_data_ = pd.DataFrame(columns=list(pred_data.keys()))
-        pred_data_.loc[0] = list(pred_data.values())
-        test_data = pd.concat([test_data, pred_data_])
-        print(test_data.tail(n=2))
-
-    train_labels = train_data['SalePrice'].apply(np.log)
-    train_data = train_data.drop(columns='SalePrice')
-
-    test_labels = test_data['SalePrice'].apply(np.log)
-
-    if pred_data is not None:
-        test_labels.iloc[test_labels.shape[0]-1] = 10
-
-
-    test_data = test_data.drop(columns='SalePrice')
-
-    train_data = fill_missing_val(train_data)
-    test_data = fill_missing_val(test_data)
-
-    train_data = feature_engineering(train_data)
-    test_data = feature_engineering(test_data)
-
-    train_test_data = pd.concat([train_data, test_data])  # data joined to perform factorization and scaling
-
-    if pred_data is None:
-        train_test_data.to_csv('iowaHomes/iowaHomes/predictionModels/training_data/training_data.csv',
-                               index=False)  # saving out data with no missing values to use when making predictions in production
-
-    train_test_data = encode_values(train_test_data)
-
-    train_test_data = log_scale_values(train_test_data, train_test_data)
-    train_test_data = drop_columns(train_test_data)
-
-    test_data = train_test_data[len(train_data):]
-    train_data = train_test_data[:len(train_data)]
-
-
-    if pred_data is None:
-        droppedCols = []
-        while True:
-            ols = linear_model.LinearRegression()
-
-            ols = ols.fit(train_data, train_labels)
-
-            xlabels = list(train_data.columns)
-            statCoef = list(stats.coef_pval(ols, train_data,train_labels))
-
-            h = 0
-            for x in range(len(statCoef)-1):
-                if h < statCoef[x+1]:
-                    h = statCoef[x+1]
-
-            if h > 0.05:
-                idx = statCoef.index(h) - 1
-                droppedCols.append(xlabels[idx])
-                train_data = train_data.drop(columns=xlabels[idx])
-                test_data = test_data.drop(columns=xlabels[idx])
-
-            else:
-                break
-
-        filename = 'iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav'
-        pickle.dump(droppedCols, open(filename, 'wb'))
-
-        stats.summary(ols, train_data, train_labels, xlabels=xlabels)
-
-        print(test_data.tail(n=2))
-        return train_data, train_labels, test_data, test_labels
-
+        t_data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'iowaHomes/iowaHomes/predictionModels/training_data')
+        train_test_data = pd.read_csv(os.path.join(t_data_path, 'training_data.csv'), keep_default_na=False)
     else:
-        return test_data.iloc[test_data.shape[0]-1]
+        train_data, train_labels, droppedCols, featureOrder, train_test_data = process_data(ret_train_data=True)
+
+    # todo look at prediction data and if columns are missing from feature order then re-train model
 
 
-def run_prediction(models, pred_data_, train_data, train_labels, load_models=False):
-
-    pred_data = {
+    pred_data_ = {
         'MSSubClass': 20.0,
         'MSZoning': 'RL',
         'OverallQual': 5,
@@ -364,99 +302,192 @@ def run_prediction(models, pred_data_, train_data, train_labels, load_models=Fal
         'ScreenPorch': 0,
         'MasVnrType': 'BrkFace',
         'MasVnrArea': 459}
-    cols = ["MSZoning" ,  "LotArea",  "OverallQual" ,
-     "OverallCond" , "YearBuilt" , "YearRemodAdd"  ,
-     "MasVnrType" , "MasVnrArea" , "ExterCond" ,
-     "BsmtQual" , "BsmtExposure" , "BsmtFinType1" ,
-     "HeatingQC" , "CentralAir" , "GrLivArea",
-     "BsmtFullBath"  ,"BedroomAbvGr" , "KitchenAbvGr" ,
-     "KitchenQual" , "Functional" , "Fireplaces"  ,
-     "GarageYrBlt" , "GarageCars" , "GarageArea" ,
-     "PavedDrive",  "WoodDeckSF" , "TotalSF" ,
-     "PorchSF"]
-    pred_data = process_data(pred_data)
+
+    # pred_values = []
+    # for key in pred_data_.keys():
+    #     pred_values.append(pred_data_[key])
+
+    pred_data = pd.DataFrame(columns=list(pred_data_.keys()))
+    pred_data.loc[0] = list(pred_data_.values())
+
+
+    pred_data = pd.concat([train_test_data, pred_data])
+
+
+    pred_data = feature_engineering(pred_data)
+
+    pred_data = pred_data.dropna(axis=1)
+
+    pred_data = encode_values(pred_data)
+
+
+    training_data = encode_values(train_test_data)
+    pred_data = log_scale_values(pred_data, training_data)
+
+    #pred_data = drop_columns(pred_data)
+    #pred_data = pred_data.drop(columns=droppedCols, errors="ignore")
+
+    pred_data = pred_data[len(training_data):]
+
 
     pred_values = []
-    for key in cols:
-        pred_values.append(pred_data[key])
+    for key in featureOrder:
+        pred_values.append(pred_data[key].values[0])
 
-    pred_data = pd.DataFrame(columns=cols)
+
+    pred_data = pd.DataFrame(columns=featureOrder)
     pred_data.loc[0] = pred_values
 
 
-   #  pred_data = pd.DataFrame(columns=list(pred_data_.keys()))
-   #  pred_data.loc[0] = list(pred_data_.values())
-   #
-   #  path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'iowaHomes/iowaHomes/predictionModels/training_data')
-   #
-   #  training_data = pd.read_csv(os.path.join(path, 'training_data.csv'), keep_default_na=False)
-   #
-   #
-   #  pred_data = pd.concat([training_data, pred_data])
-   #
-   #  pred_data = feature_engineering(pred_data)
-   #
-   #  pred_data = pred_data.dropna(axis=1)
-   #
-   #  pred_data = encode_values(pred_data)
-   #
-   #
-   #  training_data = encode_values(training_data)
-   #  pred_data = log_scale_values(pred_data, pred_data)
-   #
-   #
-   #
-   #  pred_data = drop_columns(pred_data)
-   #  pred_data = pred_data[len(training_data):]
-   #
-    droppedCols = pickle.load(open('iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav', 'rb'))
-
-    pred_data = pred_data.drop(columns=droppedCols, errors="ignore")
-
-    print(pred_data)
-   #  print("-----------")
-   #  print("pred_data")
-   #  for col in cols:
-   #      print(pred_data[col].tail(n=1))
-   # # print(pred_data)
     if load_models:
-        return 0
+        preds = 0
+        
+        models = load_models_from_file(models)
+        pred = 0
+        for model in models:
+            pred = pred + model.predict(pred_data)
+
+        pred = pred / len(models)
+        print(pred)
+        print(np.exp(pred))
+
+        # for file in os.listdir(path):
+        #     if os.path.isfile(os.path.join(path, file)):
+        #         reg = pickle.load(open(os.path.join(path, file), 'rb'))
+        #         pred = reg.predict(args_df)
+        #         print(pred)
+        #         preds = preds + pred
+        #         n_models += 1
     else:
         pred = 0
         for model in models:
             trained_m = model['func'](train_data, train_labels)
             pred = pred + trained_m.predict(pred_data)
 
-    pred = pred / len(models)
-    print(pred)
-    print(np.exp(pred))
-    print(train_labels.tail(n=1))
-    train_labels = np.exp(train_labels)
-    print(train_labels.tail(n=1))
+        pred = pred / len(models)
+        print(pred)
+        print(np.exp(pred))
+        train_labels = np.exp(train_labels)
+        print(train_labels.tail(n=1))
+
+
     exit()
+    #
+    #
+    # n_models = 0
+    # preds = 0
+    # for file in os.listdir(path):
+    #     if os.path.isfile(os.path.join(path, file)):
+    #         reg = pickle.load(open(os.path.join(path, file), 'rb'))
+    #         pred = reg.predict(args_df)
+    #         print(pred)
+    #         preds = preds + pred
+    #         n_models += 1
+    #
+    #
+    # preds = preds[0] / n_models
+    #
+    # preds = log_scale_values(preds, args_df_copy)
+    #
+    # print(preds)
+    # #print(np.exp(preds))
+    # #import math
+    # #print(math.exp(preds))
+    #
+    # return 0
 
 
-    n_models = 0
-    preds = 0
-    for file in os.listdir(path):
-        if os.path.isfile(os.path.join(path, file)):
-            reg = pickle.load(open(os.path.join(path, file), 'rb'))
-            pred = reg.predict(args_df)
-            print(pred)
-            preds = preds + pred
-            n_models += 1
+def process_data(save_train_data=False, ret_train_data=False):
+    data = pd.read_csv('iowaHomes.csv')
+
+    data = data.drop(columns='Id')
+
+    data = drop_outliers(data)
+
+    train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
+
+    # if pred_data is not None:
+    #
+    #     pred_data_ = pd.DataFrame(columns=list(pred_data.keys()))
+    #     pred_data_.loc[0] = list(pred_data.values())
+    #     test_data = pd.concat([test_data, pred_data_])
+    #     print(test_data.tail(n=2))
+
+    train_labels = train_data['SalePrice'].apply(np.log)
+    train_data = train_data.drop(columns='SalePrice')
+
+    test_labels = test_data['SalePrice'].apply(np.log)
+
+    # if pred_data is not None:
+    #     test_labels.iloc[test_labels.shape[0]-1] = 10
+
+    test_data = test_data.drop(columns='SalePrice')
+
+    train_data = fill_missing_values(train_data)
+    test_data = fill_missing_values(test_data)
+
+    train_data = feature_engineering(train_data)
+    test_data = feature_engineering(test_data)
+
+    train_test_data = pd.concat([train_data, test_data])  # data joined to perform factorization and scaling
+
+    import copy
+    train_test_data_ = copy.deepcopy(train_test_data)
+
+    if save_train_data:
+        train_test_data.to_csv('iowaHomes/iowaHomes/predictionModels/training_data/training_data.csv',index=False)  # saving out data with no missing values to use when making predictions in production
 
 
-    preds = preds[0] / n_models
+    train_test_data = encode_values(train_test_data)
 
-    preds = log_scale_values(preds, args_df_copy)
+    train_test_data = log_scale_values(train_test_data, train_test_data)
+    train_test_data = drop_columns(train_test_data)
 
-    print(preds)
-    #print(np.exp(preds))
-    #import math
-    #print(math.exp(preds))
+    test_data = train_test_data[len(train_data):]
+    train_data = train_test_data[:len(train_data)]
 
-    return 0
+
+    droppedCols = []
+    while True:
+        ols = linear_model.LinearRegression()
+
+        ols = ols.fit(train_data, train_labels)
+
+        xlabels = list(train_data.columns)
+        statCoef = list(stats.coef_pval(ols, train_data,train_labels))
+
+        h = 0
+        for x in range(len(statCoef)-1):
+            if h < statCoef[x+1]:
+                h = statCoef[x+1]
+
+        if h > 0.05:
+            idx = statCoef.index(h) - 1
+            droppedCols.append(xlabels[idx])
+            train_data = train_data.drop(columns=xlabels[idx])
+            test_data = test_data.drop(columns=xlabels[idx])
+
+        else:
+            break
+
+    featureOrder = []
+    for x in range(len(statCoef)-1):
+        featureOrder.append(xlabels[x])
+
+    stats.summary(ols, train_data, train_labels, xlabels=xlabels)
+
+    if save_train_data:
+        pickle.dump(featureOrder, open('iowaHomes/iowaHomes/predictionModels/training_data/featureOrder.sav', 'wb'))
+        pickle.dump(droppedCols, open('iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav', 'wb'))
+
+    if ret_train_data:
+        return train_data, train_labels, droppedCols, featureOrder, train_test_data_
+    else:
+        return train_data, train_labels, test_data, test_labels
+
+
+    #else:
+    #return test_data.iloc[test_data.shape[0]-1]
 
 
 def main():
@@ -499,32 +530,28 @@ def main():
         'ScreenPorch': 0,
         'MasVnrType': 'BrkFace',
         'MasVnrArea': 459}
-
-    models = [{'name': 'LinearRegression',
+    models = [{'name': 'LinearRegression.sav',
                'func': linear_reg},
-              {'name': 'Lasso',
+              {'name': 'Lasso.sav',
                'func': lasso},
-              {'name': 'BayesianRidge',
+              {'name': 'BayesianRidge.sav',
                'func': bayesian_ridge},
-              {'name': 'Ridge',
+              {'name': 'Ridge.sav',
                'func': ridge},
               ]
 
-    train_data, train_labels, test_data, test_labels = process_data()
+    #print(load_models_from_file(models))
+
+    #score_models(models)
 
 
+    #save_models_to_file(models)
 
-    #score_models(models,train_data,train_labels, test_data, test_labels)
-
-
-    #save_models(models,train_data,train_labels)
-
-    droppedCols = pickle.load(open('iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav', 'rb'))
+    #droppedCols = pickle.load(open('iowaHomes/iowaHomes/predictionModels/training_data/droppedCols.sav', 'rb'))
     #print(test_data.drop(columns=droppedCols, errors="ignore").tail(n=1))
 
 
-    run_prediction(models, args,train_data, train_labels)
-
+    run_prediction(models, args, load_models=True)
 
 
     #print(test_data.tail(n=2))
