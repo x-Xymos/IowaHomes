@@ -1,6 +1,7 @@
 from django.views import generic
 from django.shortcuts import render
 import datetime
+from run_prediction import run_prediction
 import pickle
 import pandas as pd
 import os
@@ -27,20 +28,6 @@ class LoginView(generic.ListView):
     def get_queryset(self):
         return 'predict/login.html'
 
-
-# def image(request):
-#     INK = "red", "blue", "green", "yellow"
-#     # ... create/load image here ...
-#     image = Image.new("RGB", (128, 128), random.choice(INK))
-#
-#     buff = BytesIO()
-#     image.save(buff, format="PNG")
-#     img_str = base64.b64encode(buff.getvalue())
-#
-#     data_uri = b'data:image/jpg;base64,'
-#     data_uri = data_uri + img_str
-#
-#     return data_uri.decode('utf-8')
 
 def range_slider_factory(slider):
 
@@ -79,7 +66,6 @@ def range_slider_factory(slider):
         .replace("{{slider.tooltip}}",slider['tooltip'])\
 
 
-
 def dropdown_menu_factory(menu):
     r = '<div class="rowTab">' \
         '   <script>' \
@@ -101,25 +87,6 @@ def dropdown_menu_factory(menu):
     return r.replace('{{menu.name}}', menu['name'])\
             .replace('{{menu.labelText}}', menu['labelText'])\
             .replace('{{menu.tooltip}}', menu['tooltip'])\
-
-
-
-def run_estimate(args):
-    models = ['l_reg_model.sav', 'lasso_model.sav','ridge_model.sav','b_ridge_model.sav']
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    df = pd.DataFrame(columns=list(args.keys()))
-    df.loc[0] = list(args.values())
-    
-    pred = 0
-    for model in models:
-        path = os.path.join(BASE_DIR, 'iowaHomes/predictionModels/28features/')
-
-        reg = pickle.load(open(path + model, 'rb'))
-        pred = pred + reg.predict(df)
-
-
-    return pred / len(models)
 
 
 def EstimateView(request):
@@ -536,7 +503,22 @@ def EstimateView(request):
 
     if len(context['pred_args']) > 0:
         del context['pred_args']['csrfmiddlewaretoken']
-        context['prediction'] = run_estimate(context['pred_args'])
+        context['prediction'] = run_prediction(context['pred_args'])
 
 
     return render(request, 'predict/estimate.html', context)
+
+
+# def image(request):
+#     INK = "red", "blue", "green", "yellow"
+#     # ... create/load image here ...
+#     image = Image.new("RGB", (128, 128), random.choice(INK))
+#
+#     buff = BytesIO()
+#     image.save(buff, format="PNG")
+#     img_str = base64.b64encode(buff.getvalue())
+#
+#     data_uri = b'data:image/jpg;base64,'
+#     data_uri = data_uri + img_str
+#
+#     return data_uri.decode('utf-8')
