@@ -32,7 +32,7 @@ body {
   display: flex;
   min-height: 80px;
   align-items: center;
-
+  z-index: 2;
   border: 2px solid #bfbbb6;
 
 }
@@ -50,11 +50,11 @@ body {
 #predict-form-outer
 {
     background-color: rgb(220, 220, 220);
-    width: 100%;
     border: 1px solid #bfbbb6;
     border-radius: 6px;
     margin: 50px auto 15px auto;
     width: 85%;
+
 }
 
 #footer-div {
@@ -140,4 +140,8 @@ a {
     margin-left: 20px;
     display: inline-block;
     width: 100%;
+}
+
+.ui-slider{
+    z-index: 1
 }

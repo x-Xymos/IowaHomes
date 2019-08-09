@@ -12,6 +12,20 @@
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+
+     <script>
+           $( function() {
+    $( document ).tooltip({
+      position: {
+        my: "top top-200% center",
+        at: "center bottom",
+        using: function( position, feedback ) {
+          $( this ).css( position );
+        }
+      }
+    });
+  } );
+        </script>
 </head>
 
 <div class="content">
