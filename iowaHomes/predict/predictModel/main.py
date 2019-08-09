@@ -634,7 +634,6 @@ def process_data(save_train_data=False):
     data = data.drop(columns='Id')
     data = drop_outliers(data)
 
-
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=42)
 
     train_labels = train_data['SalePrice'].apply(np.log)
