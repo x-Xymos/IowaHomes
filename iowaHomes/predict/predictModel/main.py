@@ -29,8 +29,8 @@ def linear_reg(train_data, train_labels):
 
             Paramaters
             ----------
-            train_data : dataframe
-            train_labels : dataframe
+            :param train_data : dataframe
+            :param train_labels : dataframe
 
             Returns
             ----------
@@ -54,8 +54,8 @@ def lasso(train_data, train_labels):
 
             Paramaters
             ----------
-            train_data : dataframe
-            train_labels : dataframe
+            :param train_data : dataframe
+            :param train_labels : dataframe
 
             Returns
             ----------
@@ -81,8 +81,8 @@ def bayesian_ridge(train_data, train_labels):
 
          Paramaters
          ----------
-         train_data : dataframe
-         train_labels : dataframe
+         :param train_data : dataframe
+         :param train_labels : dataframe
 
          Returns
          ----------
@@ -108,8 +108,8 @@ def ridge(train_data, train_labels):
 
        Paramaters
        ----------
-       train_data : dataframe
-       train_labels : dataframe
+       :param train_data : dataframe
+       :param train_labels : dataframe
 
        Returns
        ----------
@@ -132,7 +132,7 @@ def feature_engineering(d):
 
             Paramaters
             ----------
-            d : dataframe
+            :param d : dataframe
 
             Returns
             ----------
@@ -158,7 +158,7 @@ def fill_missing_values(d):
 
         Paramaters
         ----------
-        d : dataframe
+        :param d : dataframe
 
         Returns
         ----------
@@ -206,7 +206,7 @@ def encode_values(d):
 
          Paramaters
          ----------
-         d : dataframe
+         :param d : dataframe
 
          Returns
          ----------
@@ -239,8 +239,8 @@ def log_scale_values(d, training_data):
 
          Paramaters
          ----------
-         d : dataframe
-         training_data : dataframe
+         :param d : dataframe
+         :param training_data : dataframe
 
          Returns
          ----------
@@ -274,7 +274,7 @@ def drop_columns(d):
 
           Paramaters
           ----------
-          d : dataframe
+          :param d : dataframe
 
           Returns
           ----------
@@ -294,7 +294,7 @@ def drop_outliers(d):
 
         Paramaters
         ----------
-        d : dataframe
+        :param d : dataframe
 
         Returns
         ----------
@@ -325,10 +325,9 @@ def elem_in_array(elem, data):
 
     Paramaters
     ----------
-    elem : any
+    :param elem : any
 
-
-    data : any
+    :param data : any
 
 
 
@@ -353,14 +352,14 @@ def run_prediction(models, user_input_, load_models=True):
 
     Parameters
     ----------
-    models : list
+    :param models : list
             a list of model dictionaries containing the name of the filename
             and the function name
 
             Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
                         {'name': 'Lasso.sav','func': lasso} ]
 
-   user_input_ : dictionary
+   :param user_input_ : dictionary
                 a dictionary of feature names and their passed values
                 which are turned into a single row of data to run the prediction on
 
@@ -371,12 +370,13 @@ def run_prediction(models, user_input_, load_models=True):
                     'BsmtUnfSF': '0.0',
                     'ExterCond': 'TA'}
 
-    load_models : boolean, optional, default True
+   :param load_models: load_models : boolean, optional, default True
                 can be overridden to False to force the function to always retrain the model
 
     Returns
     ----------
     A prediction number
+
 
     """
 
@@ -431,10 +431,13 @@ def run_prediction(models, user_input_, load_models=True):
     else:
         train_data, train_labels, train_test_data, test_data, test_labels = process_data()
 
-    import re
-    for key in list(train_test_data.columns):
-        # converting/matching user input data to training data dtypes
-        key_dtype = re.sub(r'\d+', '',  type(train_test_data[key][0]).__name__)
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    CDTPATH = os.path.join(BASE_DIR, 'predictModel/predictionModels/training_data/col_dtypes.sav')
+    col_dtypes = pickle.load(open(CDTPATH, 'rb'))
+
+    for key in col_dtypes:
+        key_dtype = col_dtypes[key]
         try:
             if key_dtype == "int":
                 user_input_[key] = int(user_input_[key])
@@ -442,6 +445,18 @@ def run_prediction(models, user_input_, load_models=True):
                 user_input_[key] = float(user_input_[key])
         except:
             continue
+
+    # import re
+    # for key in list(train_test_data.columns):
+    #     # converting/matching user input data to training data dtypes
+    #     key_dtype = re.sub(r'\d+', '',  type(train_test_data[key][0]).__name__)
+    #     try:
+    #         if key_dtype == "int":
+    #             user_input_[key] = int(user_input_[key])
+    #         elif key_dtype == "float":
+    #             user_input_[key] = float(user_input_[key])
+    #     except:
+    #         continue
 
     # converting the user input into a 1 row dataframe
     user_input = pd.DataFrame(columns=list(user_input_.keys()))
@@ -506,7 +521,7 @@ def score_models(models, load_models=False):
 
      Parameters
      ----------
-     models : list
+     :param models : list
              a list of model dictionaries containing the name of the filename
              and the function name
 
@@ -514,7 +529,7 @@ def score_models(models, load_models=False):
                          {'name': 'Lasso.sav','func': lasso} ]
 
 
-     load_models : boolean, optional, default False
+     :param load_models : boolean, optional, default False
                  can be overridden to True to score saved models
 
      Returns
@@ -546,7 +561,7 @@ def save_models_to_file(models):
 
        Parameters
        ----------
-       models : list
+       :param models : list
                a list of model dictionaries containing the name of the filename
                and the function name
 
@@ -580,7 +595,7 @@ def load_models_from_file(models):
 
           Parameters
           ----------
-          models : list
+          :param models : list
                   a list of model dictionaries containing the name of the filename
                   and the function name
 
@@ -611,7 +626,7 @@ def process_data(save_train_data=False):
 
           Parameters
           ----------
-          save_train_data : boolean, default True
+          :param save_train_data : boolean, default True
                   Can be overridden to save out the [training_test_data, featureOrder] files after processing
 
 
@@ -627,9 +642,35 @@ def process_data(save_train_data=False):
 
           """
 
+
+
+
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    CSVPATH = os.path.join(BASE_DIR,'predictModel/iowaHomes.csv')
-    data = pd.read_csv(CSVPATH)
+    DB_DIR = os.path.join(os.path.dirname(BASE_DIR),'db.sqlite3')
+
+    import sqlite3
+    conn = sqlite3.connect(DB_DIR)
+
+    data = pd.read_sql_query("SELECT * FROM training_data",conn)
+    conn.close()
+    #CSVPATH = os.path.join(BASE_DIR,'predictModel/iowaHomes.csv')
+    #data = pd.read_csv(CSVPATH)
+
+    data = data.replace('NA',np.NaN)
+
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    CDTPATH = os.path.join(BASE_DIR, 'predictModel/predictionModels/training_data/col_dtypes.sav')
+    col_dtypes = pickle.load(open(CDTPATH, 'rb'))
+
+    #converting the datatypes of the columns loaded from the data from the database
+    #back to the original datatype
+    for key in col_dtypes:
+        try:
+            data[key] = data[key].astype(col_dtypes[key])
+        except:
+            continue
+
 
     data = data.drop(columns='Id')
     data = drop_outliers(data)
@@ -648,6 +689,8 @@ def process_data(save_train_data=False):
     train_data = feature_engineering(train_data)
 
     test_data = feature_engineering(test_data)
+
+
 
     train_test_data = pd.concat([train_data, test_data])  # data joined to perform factorization and scaling
 

@@ -408,7 +408,7 @@ elements = [
                 {"value": "Stone", "text": "Stone"},
 
          ],
-         "labelText": "Masonry veneer type",
+         "labelText": "Masonry Veneer Type",
          "tooltip": ""},
 
 
@@ -598,7 +598,7 @@ elements = [
                     {"value": "OthW", "text": "Hot water or steam heat other than gas"},
                     {"value": "Wall", "text": "Wall furnace"},
                     ],
-         "labelText": "Heating quality",
+         "labelText": "Heating Quality",
          "tooltip": "Type of heating"},
 
 
@@ -612,7 +612,7 @@ elements = [
                 {"value": "Fa", "text": "Fair"},
                 {"value": "Po", "text": "Poor"},
                 ],
-     "labelText": "Heating quality",
+     "labelText": "Heating Quality",
      "tooltip": "Heating quality and condition"},
 
     {"name": "CentralAir",
@@ -622,7 +622,7 @@ elements = [
                 {"value": "Y", "text": "Yes"},
                 {"value": "N", "text": "No"},
                 ],
-     "labelText": "Central air",
+     "labelText": "Central Air",
      "tooltip": "Central air conditioning"},
 
     {"name": "Electrical",
@@ -680,7 +680,7 @@ elements = [
      "step": '5',
      "value": '0',
      "unit": "sq. ft",
-     "labelText": "Above grade area",
+     "labelText": "Above Grade Area",
      "tooltip": "Above grade (ground) living area square feet"
      },
 
@@ -691,7 +691,7 @@ elements = [
      "step": '1',
      "value": '0',
      "unit": "",
-     "labelText": "Basement full bathrooms",
+     "labelText": "Basement Full Bathrooms",
      "tooltip": "Amount of full basement bathrooms"
      },
 
@@ -760,7 +760,7 @@ elements = [
                 {"value": "Fa", "text": "Fair"},
                 {"value": "Po", "text": "Poor"},
                 ],
-     "labelText": "Kitchen quality",
+     "labelText": "Kitchen Quality",
      "tooltip": "Kitchen quality rating"},
 
     {"name": "TotRmsAbvGrd",
@@ -918,7 +918,7 @@ elements = [
                 {"value": "P", "text": "Partial Pavement"},
                 {"value": "N", "text": "Dirt/Gravel"},
                 ],
-     "labelText": "Driveway type",
+     "labelText": "Driveway Type",
      "tooltip": ""},
 
     {"name": "WoodDeckSF",
@@ -928,7 +928,7 @@ elements = [
      "step": '5',
      "value": '0',
      "unit": "sq. ft",
-     "labelText": "Wood deck area",
+     "labelText": "Wood Deck Area",
      "tooltip": "Wood deck area in square feet"
      },
 
