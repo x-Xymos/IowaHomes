@@ -417,7 +417,6 @@ def run_prediction(models, user_input_, load_models=True):
             except ValueError:
                 continue
 
-
     if target_features_len != len(target_features):
         # if there are any missing features then we
         # don't load the saved model and instead retrain the model
@@ -425,10 +424,12 @@ def run_prediction(models, user_input_, load_models=True):
 
 
     if load_models:
+        print("RUNNING LOADED MODELS")
         t_data_path = os.path.join(BASE_DIR, 'predictModel/predictionModels/training_data/training_data.csv')
         train_test_data = pd.read_csv(t_data_path, keep_default_na=False)
 
     else:
+        print("RUNNING RETRAIN MODELS")
         train_data, train_labels, train_test_data, test_data, test_labels = process_data()
 
 

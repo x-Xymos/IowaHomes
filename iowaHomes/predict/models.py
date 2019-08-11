@@ -1,19 +1,5 @@
 from django.db import models
-
-class UserRole(models.Model):
-    name = models.CharField(max_length=64)
-
-    def __str__(self):
-        return 'UserRole: ' + str(self.name)
-
-class User(models.Model):
-    role = models.ForeignKey(UserRole, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=64)
-    email = models.CharField(max_length=64)
-    phone = models.CharField(max_length=15)
-
-    def __str__(self):
-        return 'User: ' + str(self.name)
+from django.contrib.auth.models import User
 
 
 class HouseListings(models.Model):
@@ -28,6 +14,7 @@ class HouseListings(models.Model):
     FirstFlrSF = models.IntegerField(default=0)
     SecondFlrSF = models.IntegerField(default=0)
     pub_date = models.DateTimeField('date published')
+    image = models.ImageField(upload_to='static/uploads', blank=True, null=True)
 
     def __str__(self):
         return 'HouseListing: ' + str(self.id)

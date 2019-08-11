@@ -10,7 +10,7 @@ sys.path.append(TPATH)
 
 
 from run_prediction import run_prediction
-
+from main import engineered_features
 
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
@@ -39,6 +39,7 @@ def range_slider_factory(slider):
     r = '<div class="rowTab">' \
         '   <script> ' \
         '       $( function() {' \
+        '$("#hidden{{slider.name}}").val({{slider.value}});' \
         '       $( "#slider{{slider.name}}" ).slider({' \
         '       value:{{slider.value}},' \
         '       min: {{slider.min}},' \
@@ -118,13 +119,25 @@ def EstimateView(request):
     FOPATH = os.path.join(BASE_DIR, 'predict/predictModel/predictionModels/training_data/featureOrder.sav')
     featureOrder = pickle.load(open(FOPATH, 'rb'))
 
-    cooked_elems = []
+    target_features = []
+    # converting features that were engineered, into their dependencies
     for feat in featureOrder:
-        for elem in elements:
-            if feat == elem['name']:
-                c_elem = elem_factory_def[elem['type']](elem)
-                cooked_elems.append(c_elem)
-                continue
+        target_features.append(feat)
+        for e_feat in engineered_features:
+            if e_feat['name'] == feat:
+                target_features.remove(feat)
+                for dep in e_feat['dependencies']:
+                    target_features.append(dep)
+
+    cooked_elems = []
+    for feat in target_features:
+        c_elem = elem_factory_def[elements[feat]['type']](elements[feat])
+        cooked_elems.append(c_elem)
+        # for elem in elements:
+        #     if feat == elem['name']:
+        #         c_elem = elem_factory_def[elem['type']](elem)
+        #         cooked_elems.append(c_elem)
+        #         continue
 
 
     context = {'pred_args': {},
@@ -136,7 +149,7 @@ def EstimateView(request):
     for key, value in request.POST.items():
         context['pred_args'][key] = value
 
-
+    print(context['pred_args'])
     if len(context['pred_args']) > 0:
         del context['pred_args']['csrfmiddlewaretoken']
         context['prediction'] = int(run_prediction(context['pred_args']))
@@ -144,17 +157,3 @@ def EstimateView(request):
 
     return render(request, 'predict/estimate.html', context)
 
-
-# def image(request):
-#     INK = "red", "blue", "green", "yellow"
-#     # ... create/load image here ...
-#     image = Image.new("RGB", (128, 128), random.choice(INK))
-#
-#     buff = BytesIO()
-#     image.save(buff, format="PNG")
-#     img_str = base64.b64encode(buff.getvalue())
-#
-#     data_uri = b'data:image/jpg;base64,'
-#     data_uri = data_uri + img_str
-#
-#     return data_uri.decode('utf-8')
