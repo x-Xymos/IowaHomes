@@ -4,3 +4,5 @@ from main import models
 
 def score_models():
     score_models_(models)
+
+score_models()

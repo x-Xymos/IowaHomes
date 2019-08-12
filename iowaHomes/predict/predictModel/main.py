@@ -549,7 +549,7 @@ def score_models(models, load_models=False):
         trained_m = model['func'](train_data, train_labels)
         pred = trained_m.predict(test_data)
 
-        print(trained_m['name'])
+        print(model['name'])
         print("RMSLE ", mean_squared_log_error(test_labels, pred))
         print("RMSE ", mean_squared_error(test_labels, pred))
         print("Variance ", explained_variance_score(test_labels, pred))
@@ -688,7 +688,6 @@ def process_data(save_train_data=False):
     test_data = fill_missing_values(test_data)
 
     train_data = feature_engineering(train_data)
-
     test_data = feature_engineering(test_data)
 
 
@@ -711,36 +710,35 @@ def process_data(save_train_data=False):
     test_data = train_test_data[len(train_data):]
     train_data = train_test_data[:len(train_data)]
 
-
-    droppedCols = []
-    while True:
-        # using the stats package, this iteratively gets the feature with the highest pvalue
-        # and drops it until there are no features left that are below the defined h threshold
-        ols = linear_model.LinearRegression()
-        ols = ols.fit(train_data, train_labels)
-
-        xlabels = list(train_data.columns)
-        statCoef = list(stats.coef_pval(ols, train_data,train_labels))
-
-        h = 0
-        for x in range(len(statCoef)-1):
-            if h < statCoef[x+1]:
-                # loop through all features to find the one with the highest pvalue
-                h = statCoef[x+1]
-
-        if h > 0.05:
-            # if feature has a pvalue greater than h then drop it
-            idx = statCoef.index(h) - 1
-            droppedCols.append(xlabels[idx])
-            train_data = train_data.drop(columns=xlabels[idx])
-            test_data = test_data.drop(columns=xlabels[idx])
-
-        else:
-            break
-
-
     if save_train_data:
-        # saves out data that is used to run an offline prediction
+        droppedCols = []
+        while True:
+            # using the stats package, this iteratively gets the feature with the highest pvalue
+            # and drops it until there are no features left that are below the defined h threshold
+            ols = linear_model.LinearRegression()
+            ols = ols.fit(train_data, train_labels)
+
+            xlabels = list(train_data.columns)
+            statCoef = list(stats.coef_pval(ols, train_data,train_labels))
+
+            h = 0
+            for x in range(len(statCoef)-1):
+                if h < statCoef[x+1]:
+                    # loop through all features to find the one with the highest pvalue
+                    h = statCoef[x+1]
+
+            if h > 0.05:
+                # if feature has a pvalue greater than h then drop it
+                idx = statCoef.index(h) - 1
+                droppedCols.append(xlabels[idx])
+                train_data = train_data.drop(columns=xlabels[idx])
+                test_data = test_data.drop(columns=xlabels[idx])
+
+            else:
+                break
+
+            # saves out data that is used to run an offline prediction
+
         stats.summary(ols, train_data, train_labels, xlabels=xlabels)
         TDPATH = os.path.join(BASE_DIR, 'predictModel/predictionModels/training_data/featureOrder.sav')
 
