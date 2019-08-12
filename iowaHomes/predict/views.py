@@ -14,7 +14,6 @@ from main import engineered_features
 
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
-    #return render(request, 'predict/index.html')
 
     def get_queryset(self):
         return 'predict/index.html'

@@ -482,7 +482,7 @@ def run_prediction(models, user_input_, load_models=True):
     user_input = pd.DataFrame(columns=featureOrder)
     user_input.loc[0] = pred_values
 
-    print(user_input)
+    #print(user_input)
 
     if load_models:
         models = load_models_from_file(models)
