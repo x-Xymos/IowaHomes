@@ -8,16 +8,17 @@ sys.path.append(MPATH)
 TPATH = os.path.join(PROJECT_DIR, "templates/predict")
 sys.path.append(TPATH)
 
-
 from run_prediction import run_prediction
 from main import engineered_features
 
+
+#most of these view functions and their html templates should be rewritten to use a template
+#that replaces the codeblock inside the template with the content
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
 
     def get_queryset(self):
         return 'predict/index.html'
-
 
 class BrowseView(generic.ListView):
     template_name = 'predict/browseHomes.html'
@@ -25,15 +26,39 @@ class BrowseView(generic.ListView):
     def get_queryset(self):
         return 'predict/browseHomes.html'
 
-
 class LoginView(generic.ListView):
     template_name = 'predict/login.html'
 
     def get_queryset(self):
         return 'predict/login.html'
 
-
 def range_slider_factory(slider):
+    """
+
+    Cooks the input slider data into html format
+
+    Parameters
+    ----------
+    :param slider : dictionary
+    example:
+           "LotFrontage":
+             {"name": "LotFrontage",
+              "type": "slider",
+              "min": '10',
+              "max": '350',
+              "step": '5',
+              "value": '0',
+              "unit": "sq. ft",
+              "labelText": "Lot Frontage",
+              "tooltip": "Linear feet of street connected to property"
+              }
+
+    Returns
+    ----------
+    slider : string, html
+
+    """
+
 
     r = '<div class="rowTab">' \
         '   <script> ' \
@@ -71,20 +96,37 @@ def range_slider_factory(slider):
         .replace("{{slider.labelText}}",slider['labelText'])\
         .replace("{{slider.tooltip}}",slider['tooltip'])\
 
-
 def dropdown_menu_factory(menu):
-    # r = '<div class="rowTab">' \
-    #     '   <script>' \
-    #     '       $( function() {' \
-    #     '           $( document ).tooltip({ });' \
-    #     '       } );' \
-    #     '   </script>' \
-    #     '   <div class="input-label">' \
-    #     '       <label id="{{menu.name}}-label" for="{{menu.name}}">{{menu.labelText}}</label>' \
-    #     '   </div>' \
-    #     '   <div class="input-field" title="{{menu.tooltip}}">' \
-    #             '<div class="tooltip-box" title="{{slider.tooltip}}"></div>' \
-    #     '       <select class="input-dropdown" id={{menu.name}} name="{{menu.name}}">'
+    """
+    Cooks the input dropdown menu data into html format
+
+    Parameters
+    ----------
+    :param menu : dictionary
+    example:
+          "MSZoning":
+             {"name": "MSZoning",
+              "type": "dropdown",
+              "fields": [
+                  {"value": "", "text": ""},
+                  {"value": "A", "text": "Agriculture"},
+                  {"value": "C", "text": "Commercial"},
+                  {"value": "FV", "text": "Floating Village"},
+                  {"value": "I", "text": "Industrial"},
+                  {"value": "RH", "text": "Residential - High Density"},
+                  {"value": "RM", "text": "Residential - Medium Density"},
+                  {"value": "RP", "text": "Residential - Low Density Park"},
+                  {"value": "RL", "text": "Residential - Low Density"},
+              ],
+              "labelText": "Zoning Classification",
+              "tooltip": "Identifies the general zoning classification"},
+
+    Returns
+    ----------
+    menu : string, html
+
+    """
+
 
     r = '<div class="rowTab">' \
         '   <div class="input-label">' \
@@ -105,8 +147,20 @@ def dropdown_menu_factory(menu):
             .replace('{{menu.labelText}}', menu['labelText'])\
             .replace('{{menu.tooltip}}', menu['tooltip'])\
 
-
 def EstimateView(request):
+    """
+    Renders the estimate page
+
+    Parameters
+    ----------
+    :param request : dictionary
+
+    Returns
+    ----------
+    render : HttpResponse
+
+    """
+
     from feature_element_def import elements
 
 

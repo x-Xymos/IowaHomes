@@ -1,5 +1,6 @@
 import datetime
 
+#this just holds the dictionary of all the features and their possible values
 elements = {
 
     "MSSubClass":

@@ -1,12 +1,12 @@
 from iowaHomes.predict.predictModel.run_prediction import run_prediction
 from iowaHomes.predict.templates.predict.feature_element_def import elements
 from iowaHomes.predict.predictModel.main import engineered_features
-import pickle, os, random
+from iowaHomes.predict.predictModel.score_models import score_models
 
+import pickle, os, random
 
 def test_run_prediction(n=10):
     """
-
     Runs the run_predicition function n number of times, using a random value
     for the user_input every time the function runs
 
@@ -42,5 +42,19 @@ def test_run_prediction(n=10):
 
         print(run_prediction(args))
 
+def test_score_models():
+    """
+       Runs the score_models function that outputs the result of different
+       metrics that measure the accuracy of all the models
 
-test_run_prediction(100)
+       Expected result: Function runs and prints the results of all the models
+
+       :return None:
+       """
+    score_models()
+
+def run_tests():
+    test_score_models()
+    test_run_prediction(15)
+
+run_tests()

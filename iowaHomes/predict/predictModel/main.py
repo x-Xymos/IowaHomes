@@ -24,19 +24,19 @@ pd.options.mode.chained_assignment = None
 def linear_reg(train_data, train_labels):
     """
 
-            Fits the train_data and train_labels to the model returns it
+    Fits the train_data and train_labels to the model returns it
 
 
-            Paramaters
-            ----------
-            :param train_data : dataframe
-            :param train_labels : dataframe
+    Paramaters
+    ----------
+    :param train_data : dataframe
+    :param train_labels : dataframe
 
-            Returns
-            ----------
-            model : linear_reg
+    Returns
+    ----------
+    model : linear_reg
 
-        """
+    """
 
     model = linear_model.LinearRegression(copy_X=True, fit_intercept=True, n_jobs=-1,
                      normalize=False)
@@ -49,19 +49,19 @@ def linear_reg(train_data, train_labels):
 def lasso(train_data, train_labels):
     """
 
-            Fits the train_data and train_labels to the model returns it
+    Fits the train_data and train_labels to the model returns it
 
 
-            Paramaters
-            ----------
-            :param train_data : dataframe
-            :param train_labels : dataframe
+    Paramaters
+    ----------
+    :param train_data : dataframe
+    :param train_labels : dataframe
 
-            Returns
-            ----------
-            model : lasso
+    Returns
+    ----------
+    model : lasso
 
-        """
+    """
 
     model = linear_model.LassoCV(tol=0.00, precompute=True, normalize=True,
                              max_iter=300,fit_intercept=True, cv=13,
@@ -76,17 +76,17 @@ def lasso(train_data, train_labels):
 def bayesian_ridge(train_data, train_labels):
     """
 
-         Fits the train_data and train_labels to the model returns it
+     Fits the train_data and train_labels to the model returns it
 
 
-         Paramaters
-         ----------
-         :param train_data : dataframe
-         :param train_labels : dataframe
+     Paramaters
+     ----------
+     :param train_data : dataframe
+     :param train_labels : dataframe
 
-         Returns
-         ----------
-         model : bayesian_ridge
+     Returns
+     ----------
+     model : bayesian_ridge
 
      """
 
@@ -103,19 +103,19 @@ def bayesian_ridge(train_data, train_labels):
 def ridge(train_data, train_labels):
     """
 
-       Fits the train_data and train_labels to the model returns it
+    Fits the train_data and train_labels to the model returns it
 
 
-       Paramaters
-       ----------
-       :param train_data : dataframe
-       :param train_labels : dataframe
+    Paramaters
+    ----------
+    :param train_data : dataframe
+    :param train_labels : dataframe
 
-       Returns
-       ----------
-       model : Ridge
+    Returns
+    ----------
+    model : Ridge
 
-   """
+    """
 
     model = linear_model.Ridge(tol=0.06, solver="svd", max_iter=4500, fit_intercept=True,
                              alpha=0.46, random_state=42)
@@ -127,18 +127,18 @@ def ridge(train_data, train_labels):
 
 def feature_engineering(d):
     """
-            Creates new features in d based on the dependencies and features in engineered_features
+    Creates new features in d based on the dependencies and features in engineered_features
 
 
-            Paramaters
-            ----------
-            :param d : dataframe
+    Paramaters
+    ----------
+    :param d : dataframe
 
-            Returns
-            ----------
-            d : dataframe
+    Returns
+    ----------
+    d : dataframe
 
-        """
+    """
 
     for feature in engineered_features:
         d[feature['name']] = 0
@@ -153,16 +153,16 @@ def feature_engineering(d):
 
 def fill_missing_values(d):
     """
-        Applies a number of Imputers to fill in missing values
+    Applies a number of Imputers to fill in missing values
 
 
-        Paramaters
-        ----------
-        :param d : dataframe
+    Paramaters
+    ----------
+    :param d : dataframe
 
-        Returns
-        ----------
-        d : dataframe
+    Returns
+    ----------
+    d : dataframe
 
     """
 
@@ -200,19 +200,19 @@ def fill_missing_values(d):
 
 def encode_values(d):
     """
-         Applies an ordinal encoder to d dataframe based on the columns
-         defined in factorization_features
+     Applies an ordinal encoder to d dataframe based on the columns
+     defined in factorization_features
 
 
-         Paramaters
-         ----------
-         :param d : dataframe
+     Paramaters
+     ----------
+     :param d : dataframe
 
-         Returns
-         ----------
-         d : dataframe
+     Returns
+     ----------
+     d : dataframe
 
-     """
+    """
 
     factorization_features = list(d.select_dtypes(include=[np.object]).columns)
     factorization_features = factorization_features + ['YearBuilt', 'YearRemodAdd',
@@ -232,21 +232,21 @@ def encode_values(d):
 def log_scale_values(d, training_data):
     """
 
-         Fits training_data to a FunctionTransformer and then applies that
-         FunctionTransformer to the d dataframe on the columns defined
-         in scale_log_features
+     Fits training_data to a FunctionTransformer and then applies that
+     FunctionTransformer to the d dataframe on the columns defined
+     in scale_log_features
 
 
-         Paramaters
-         ----------
-         :param d : dataframe
-         :param training_data : dataframe
+     Paramaters
+     ----------
+     :param d : dataframe
+     :param training_data : dataframe
 
-         Returns
-         ----------
-         d : dataframe
+     Returns
+     ----------
+     d : dataframe
 
-     """
+    """
 
 
     transformer = FunctionTransformer(np.log1p, validate=True)
@@ -270,17 +270,17 @@ def log_scale_values(d, training_data):
 def drop_columns(d):
     """
 
-          Takes in input dataframe and drops the columns defined in dropped_features
+    Takes in input dataframe and drops the columns defined in dropped_features
 
-          Paramaters
-          ----------
-          :param d : dataframe
+    Paramaters
+    ----------
+    :param d : dataframe
 
-          Returns
-          ----------
-          d : dataframe
+    Returns
+    ----------
+    d : dataframe
 
-      """
+    """
 
     d = d.drop(columns=dropped_features, errors="ignore")
 
@@ -290,17 +290,17 @@ def drop_columns(d):
 def drop_outliers(d):
     """
 
-        Takes in input dataframe and drops the specified rows
+    Takes in input dataframe and drops the specified rows
 
-        Paramaters
-        ----------
-        :param d : dataframe
+    Paramaters
+    ----------
+    :param d : dataframe
 
-        Returns
-        ----------
-        d : dataframe
+    Returns
+    ----------
+    d : dataframe
 
-        """
+    """
 
     d = d.drop(d[(d['OverallQual'] < 5.0) & (d['SalePrice'] > 200000)].index)
     d = d.drop(d[(d['OverallQual'] == 8.0) & (d['SalePrice'] > 470000)].index)
@@ -320,7 +320,7 @@ def drop_outliers(d):
 def elem_in_array(elem, data):
 
     """
-
+    utility function:
     Loops through data to check if it contains elem
 
     Paramaters
@@ -359,7 +359,7 @@ def run_prediction(models, user_input_, load_models=True):
             Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
                         {'name': 'Lasso.sav','func': lasso} ]
 
-   :param user_input_ : dictionary
+    :param user_input_ : dictionary
                 a dictionary of feature names and their passed values
                 which are turned into a single row of data to run the prediction on
 
@@ -370,7 +370,7 @@ def run_prediction(models, user_input_, load_models=True):
                     'BsmtUnfSF': '0.0',
                     'ExterCond': 'TA'}
 
-   :param load_models: load_models : boolean, optional, default True
+    :param load_models: load_models : boolean, optional, default True
                 can be overridden to False to force the function to always retrain the model
 
     Returns
@@ -518,25 +518,25 @@ def run_prediction(models, user_input_, load_models=True):
 def score_models(models, load_models=False):
     """
 
-     Prints the accuracy score for the provided models
+    Prints the accuracy score for the provided models
 
-     Parameters
-     ----------
-     :param models : list
-             a list of model dictionaries containing the name of the filename
-             and the function name
+    Parameters
+    ----------
+    :param models : list
+         a list of model dictionaries containing the name of the filename
+         and the function name
 
-             Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
-                         {'name': 'Lasso.sav','func': lasso} ]
+         Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
+                     {'name': 'Lasso.sav','func': lasso} ]
 
 
-     :param load_models : boolean, optional, default False
-                 can be overridden to True to score saved models
+    :param load_models : boolean, optional, default False
+             can be overridden to True to score saved models
 
-     Returns
-     ----------
-     None
-     """
+    Returns
+    ----------
+    None
+    """
 
     train_data, train_labels, train_test_data_, test_data, test_labels = process_data()
 
@@ -558,23 +558,23 @@ def score_models(models, load_models=False):
 def save_models_to_file(models):
 
     """
-       Train the provided models and save them out
+    Train the provided models and save them out
 
-       Parameters
-       ----------
-       :param models : list
-               a list of model dictionaries containing the name of the filename
-               and the function name
+    Parameters
+    ----------
+    :param models : list
+           a list of model dictionaries containing the name of the filename
+           and the function name
 
-               Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
-                           {'name': 'Lasso.sav','func': lasso} ]
+           Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
+                       {'name': 'Lasso.sav','func': lasso} ]
 
 
-       Returns
-       ----------
-       None
+    Returns
+    ----------
+    None
 
-       """
+    """
 
     train_data, train_labels, train_test_data_, test_data, test_labels = process_data(save_train_data=True)
 
@@ -592,23 +592,23 @@ def save_models_to_file(models):
 def load_models_from_file(models):
 
     """
-          Load the requested models from file
+    Load the requested models from file
 
-          Parameters
-          ----------
-          :param models : list
-                  a list of model dictionaries containing the name of the filename
-                  and the function name
+    Parameters
+    ----------
+    :param models : list
+          a list of model dictionaries containing the name of the filename
+          and the function name
 
-                  Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
-                              {'name': 'Lasso.sav','func': lasso} ]
+          Example: [ {'name': 'LinearRegression.sav','func': linear_reg},
+                      {'name': 'Lasso.sav','func': lasso} ]
 
 
-          Returns
-          ----------
-          loaded_models : list
+    Returns
+    ----------
+    loaded_models : list
 
-          """
+    """
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -623,28 +623,24 @@ def load_models_from_file(models):
 
 def process_data(save_train_data=False):
     """
-          Load the training data and process it
+    Load the training data and process it
 
-          Parameters
-          ----------
-          :param save_train_data : boolean, default True
-                  Can be overridden to save out the [training_test_data, featureOrder] files after processing
-
-
-
-          Returns
-          ----------
-          train_data : pandas dataframe
-          train_labels : pandas dataframe
-          train_test_data_ : pandas dataframe
-          test_data : pandas dataframe
-          test_labels : pandas dataframe
-
-
-          """
+    Parameters
+    ----------
+    :param save_train_data : boolean, default True
+          Can be overridden to save out the [training_test_data, featureOrder] files after processing
 
 
 
+    Returns
+    ----------
+    train_data : pandas dataframe
+    train_labels : pandas dataframe
+    train_test_data_ : pandas dataframe
+    test_data : pandas dataframe
+    test_labels : pandas dataframe
+
+    """
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DB_DIR = os.path.join(os.path.dirname(BASE_DIR),'db.sqlite3')
