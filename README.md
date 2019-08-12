@@ -80,7 +80,7 @@ The retrained model can then be tested using the score_models.py function inside
 
 
 ## Deployment
-The deployment to a cloud server or anywhere else is the same as above.
+Deployment to a cloud server or anywhere else is the same as above.
 
 ## Built With
 
