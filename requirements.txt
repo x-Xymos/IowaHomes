@@ -16,3 +16,4 @@ seaborn==0.9.0
 six==1.12.0
 sqlparse==0.3.0
 statsmodels==0.10.1
+Pillow==5.4.1

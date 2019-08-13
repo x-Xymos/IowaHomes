@@ -1,4 +1,4 @@
 #!/bin/bash
 
 python3 -m venv "$(pwd)/iowaHomes/venv/";
-sudo "$(pwd)/iowaHomes/venv/bin/pip" install -r "$(pwd)/requirements.txt";
+"$(pwd)/iowaHomes/venv/bin/pip" install -r "$(pwd)/requirements.txt";
