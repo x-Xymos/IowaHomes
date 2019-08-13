@@ -87,6 +87,10 @@ The retrained model can then be tested using the score_models.py function inside
 
 ## Deployment
 Deployment to a cloud server or anywhere else is the same as above.
+If you want the server to run as a background process then run
+```
+nohup ./run_server &
+```
 
 ## Built With
 
