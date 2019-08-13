@@ -3,28 +3,26 @@ from django.shortcuts import render
 import datetime, os, sys, pickle
 
 PROJECT_DIR = os.path.dirname(__file__)
-MPATH = os.path.join(PROJECT_DIR, "predictModel/")
-sys.path.append(MPATH)
-TPATH = os.path.join(PROJECT_DIR, "templates/predict")
-sys.path.append(TPATH)
+sys.path.append(os.path.join(PROJECT_DIR, "predictModel/"))
+sys.path.append(os.path.join(PROJECT_DIR, "templates/predict"))
 
 from run_prediction import run_prediction
 from main import engineered_features
 
 
-#most of these view functions and their html templates should be rewritten to use a template
-#that replaces the codeblock inside the template with the content
 class IndexView(generic.ListView):
     template_name = 'predict/index.html'
 
     def get_queryset(self):
         return 'predict/index.html'
 
+
 class BrowseView(generic.ListView):
     template_name = 'predict/browseHomes.html'
 
     def get_queryset(self):
         return 'predict/browseHomes.html'
+
 
 class LoginView(generic.ListView):
     template_name = 'predict/login.html'
