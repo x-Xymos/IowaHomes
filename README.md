@@ -23,6 +23,7 @@ sudo apt update
 sudo apt-get install python3
 sudo apt-get install python-pip3
 sudo apt-get install python3-venv
+sudo apt-get install net-tools
 ```
 
 ### Installing
