@@ -1,50 +1,83 @@
-{% load static %}
+{% extends "predict/layout.html" %}
+    {% block content %}
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+          <link rel="stylesheet" href="/resources/demos/style.css">
+          <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+          <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+             <script>
+                   $( function() {
+                    $( document ).tooltip({
+                      position: {
+                        my: "top top-200% center",
+                        at: "center bottom",
+                        using: function( position, feedback ) {
+                          $( this ).css( position );
+                        }
+                      }
+                    });
+                  } );
+            </script>
+        </head>
+        <div class="content">
 
-<link rel="stylesheet" type="text/css" href="{% static 'predict/style.css' %}">
+            <h1>Estimated House Value: {% if prediction %} ${{prediction}} {% endif %}</h1>
 
-{% include "predict/header.html" %}
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="/resources/demos/style.css">
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+            <div id="predict-form-outer">
+                <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
+                <form id="predict-input-form" action="{% url 'predict:estimate' %}" method="post">
+                {% csrf_token %}
+                    {% for elem in target_elements %}
+                        {% if elem.type == "slider" %}
+                            <div class="rowTab">
+                                <script>
+                                    $( function() {
+                                        $("#hidden{{elem.name}}").val({{elem.value}});
+                                        $( "#slider{{elem.name}}" ).slider({
+                                        value:{{elem.value}},
+                                        min: {{elem.min}},
+                                        max: {{elem.max}},
+                                        step: {{elem.step}},
+                                        slide: function( event, ui ) {
+                                            $("#amount{{elem.name}}" ).val(ui.value + " {{elem.unit}}");
+                                            $("#hidden{{elem.name}}").val(ui.value);
+                                            }
+                                    });
+                                        $( "#amount{{elem.name}}" ).val( $("#slider{{elem.name}}" ).slider( "value" ) );
+                                    } );
+                                </script>
+                            <div class="input-label">
+                                <label class="rangeLabel" for="amount{{elem.name}}">{{elem.labelText}}</label>
+                            </div>
+                                <div class="input-field" title="{{elem.tooltip}}">
+                                    <div class="tooltip-box" title="{{elem.tooltip}}"></div>
+                                    <div class="range-slider" id="slider{{elem.name}}"></div>
+                                    <input class="range-amount-text" type="text" id="amount{{elem.name}}" readonly style="border:0; font-weight:bold;">
+                                    <input type="hidden" name="{{elem.name}}" id="hidden{{elem.name}}" value="">
+                                </div>
+                            </div>
+                        {% elif elem.type == "dropdown" %}
+                            <div class="rowTab">
+                                <div class="input-label">
+                                    <label id="{{elem.name}}-label" for="{{elem.name}}">{{elem.labelText}}</label>
+                                </div>
+                                <div class="input-field" title="{{menu.tooltip}}">
+                                    <div class="tooltip-box" title="{{elem.tooltip}}"></div>
+                                    <select class="input-dropdown" id={{elem.name}} name="{{elem.name}}">
+                                        {% for field in elem.fields %}
+                                        <option value="{{field.value}}">{{field.text}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% endif %}
 
-
-     <script>
-           $( function() {
-    $( document ).tooltip({
-      position: {
-        my: "top top-200% center",
-        at: "center bottom",
-        using: function( position, feedback ) {
-          $( this ).css( position );
-        }
-      }
-    });
-  } );
-        </script>
-</head>
-
-<div class="content">
-
-    <h1>Estimated House Value: {% if prediction %} ${{prediction}} {% endif %}</h1>
-
-    <div id="predict-form-outer">
-        <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
-        <form id="predict-input-form" action="{% url 'predict:estimate' %}" method="post">
-        {% csrf_token %}
-            {% for elem in cooked_elems %}
-             {% autoescape on %}
-                    {{elem|safe}}
-                {% endautoescape %}
-            {% endfor %}
-            <input type="submit" value="Submit">
-        </form>
-    </div>
-</div>
-
-
-{% include "predict/footer.html" %}
+                    {% endfor %}
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    {% endblock %}

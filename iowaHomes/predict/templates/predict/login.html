@@ -1,11 +1,4 @@
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'predict/style.css' %}">
-
-{% include "predict/header.html" %}
-
-<div class="content">
-    <h1>Log in</h1>
-</div>
-
-{% include "predict/footer.html" %}
+{% extends "predict/layout.html" %}
+    {% block content %}
+        <h1>Log in</h1>
+    {% endblock %}

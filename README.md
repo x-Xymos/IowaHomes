@@ -60,6 +60,11 @@ then run
 ./kill_server
 ./run_server
 ```
+## Opening the application
+After the server is ran, we can acess the application through the website
+```
+http://127.0.0.1:8000/predict/estimate/
+```
 
 ## Running the tests
 

@@ -1,12 +1,5 @@
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'predict/style.css' %}">
-
-{% include "predict/header.html" %}
-
-<div class="content">
-    <a href="/predict/estimate">Estimate</a>
+{% extends "predict/layout.html" %}
+    {% block content %}
+        <a href="/predict/estimate">Estimate</a>
     <a href="/predict/browse">Browse</a>
-</div>
-
-{% include "predict/footer.html" %}
+    {% endblock %}

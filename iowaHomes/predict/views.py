@@ -32,120 +32,6 @@ class LoginView(generic.ListView):
     def get_queryset(self):
         return 'predict/login.html'
 
-def range_slider_factory(slider):
-    """
-
-    Cooks the input slider data into html format
-
-    Parameters
-    ----------
-    :param slider : dictionary
-    example:
-           "LotFrontage":
-             {"name": "LotFrontage",
-              "type": "slider",
-              "min": '10',
-              "max": '350',
-              "step": '5',
-              "value": '0',
-              "unit": "sq. ft",
-              "labelText": "Lot Frontage",
-              "tooltip": "Linear feet of street connected to property"
-              }
-
-    Returns
-    ----------
-    slider : string, html
-
-    """
-
-
-    r = '<div class="rowTab">' \
-        '   <script> ' \
-        '       $( function() {' \
-        '$("#hidden{{slider.name}}").val({{slider.value}});' \
-        '       $( "#slider{{slider.name}}" ).slider({' \
-        '       value:{{slider.value}},' \
-        '       min: {{slider.min}},' \
-        '       max: {{slider.max}},' \
-        '       step: {{slider.step}},' \
-        '       slide: function( event, ui ) {' \
-        '           $("#amount{{slider.name}}" ).val(ui.value + " {{slider.unit}}");' \
-        '           $("#hidden{{slider.name}}").val(ui.value);' \
-        '           }' \
-        '         });' \
-        '         $( "#amount{{slider.name}}" ).val( $("#slider{{slider.name}}" ).slider( "value" ) );' \
-        '} );' \
-        '</script>' \
-        '<div class="input-label">' \
-        '   <label class="rangeLabel" for="amount{{slider.name}}">{{slider.labelText}}</label>' \
-        '   </div>' \
-        '   <div class="input-field" title="{{slider.tooltip}}">' \
-                '<div class="tooltip-box" title="{{slider.tooltip}}"></div>'\
-        '       <div class="range-slider" id="slider{{slider.name}}"></div>' \
-        '       <input class="range-amount-text" type="text" id="amount{{slider.name}}" readonly style="border:0; font-weight:bold;">' \
-        '       <input type="hidden" name="{{slider.name}}" id="hidden{{slider.name}}" value="">' \
-        '   </div>' \
-        '</div>'
-    return r.replace("{{slider.name}}",slider['name'])\
-        .replace("{{slider.value}}",slider['value'])\
-        .replace("{{slider.min}}",slider['min'])\
-        .replace("{{slider.max}}",slider['max'])\
-        .replace("{{slider.step}}",slider['step']) \
-        .replace("{{slider.unit}}", slider['unit']) \
-        .replace("{{slider.labelText}}",slider['labelText'])\
-        .replace("{{slider.tooltip}}",slider['tooltip'])\
-
-def dropdown_menu_factory(menu):
-    """
-    Cooks the input dropdown menu data into html format
-
-    Parameters
-    ----------
-    :param menu : dictionary
-    example:
-          "MSZoning":
-             {"name": "MSZoning",
-              "type": "dropdown",
-              "fields": [
-                  {"value": "", "text": ""},
-                  {"value": "A", "text": "Agriculture"},
-                  {"value": "C", "text": "Commercial"},
-                  {"value": "FV", "text": "Floating Village"},
-                  {"value": "I", "text": "Industrial"},
-                  {"value": "RH", "text": "Residential - High Density"},
-                  {"value": "RM", "text": "Residential - Medium Density"},
-                  {"value": "RP", "text": "Residential - Low Density Park"},
-                  {"value": "RL", "text": "Residential - Low Density"},
-              ],
-              "labelText": "Zoning Classification",
-              "tooltip": "Identifies the general zoning classification"},
-
-    Returns
-    ----------
-    menu : string, html
-
-    """
-
-
-    r = '<div class="rowTab">' \
-        '   <div class="input-label">' \
-        '       <label id="{{menu.name}}-label" for="{{menu.name}}">{{menu.labelText}}</label>' \
-        '   </div>' \
-        '   <div class="input-field" title="{{menu.tooltip}}">' \
-        '<div class="tooltip-box" title="{{slider.tooltip}}"></div>' \
-        '       <select class="input-dropdown" id={{menu.name}} name="{{menu.name}}">'
-
-    for field in menu['fields']:
-        r = r + '<option value="%s">%s</option>' %(field['value'], field['text'])
-
-
-    r = r + "</select>" \
-            "</div>" \
-            "</div>"
-    return r.replace('{{menu.name}}', menu['name'])\
-            .replace('{{menu.labelText}}', menu['labelText'])\
-            .replace('{{menu.tooltip}}', menu['tooltip'])\
 
 def EstimateView(request):
     """
@@ -164,10 +50,6 @@ def EstimateView(request):
     from feature_element_def import elements
 
 
-    elem_factory_def = {'dropdown': dropdown_menu_factory,
-                        'slider': range_slider_factory}
-
-
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     FOPATH = os.path.join(BASE_DIR, 'predict/predictModel/predictionModels/training_data/featureOrder.sav')
     featureOrder = pickle.load(open(FOPATH, 'rb'))
@@ -182,19 +64,13 @@ def EstimateView(request):
                 for dep in e_feat['dependencies']:
                     target_features.append(dep)
 
-    cooked_elems = []
+    target_elements = []
     for feat in target_features:
-        c_elem = elem_factory_def[elements[feat]['type']](elements[feat])
-        cooked_elems.append(c_elem)
-        # for elem in elements:
-        #     if feat == elem['name']:
-        #         c_elem = elem_factory_def[elem['type']](elem)
-        #         cooked_elems.append(c_elem)
-        #         continue
+        target_elements.append(elements[feat])
 
 
     context = {'pred_args': {},
-               'cooked_elems': cooked_elems,
+               'target_elements': target_elements,
                'prediction': None,
 
                }
