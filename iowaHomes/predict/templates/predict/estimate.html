@@ -24,7 +24,11 @@
         </head>
         <div class="content">
 
-            <h1>Estimated House Value: {% if prediction %} ${{prediction}} {% endif %}</h1>
+            {% if prediction %}
+            <h2>Estimated House Value:  ${{prediction}}</h2>
+            {% else %}
+            <h2>Please fill out and submit the form to receive an estimate</h2>
+            {% endif %}
 
             <div id="predict-form-outer">
                 <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>

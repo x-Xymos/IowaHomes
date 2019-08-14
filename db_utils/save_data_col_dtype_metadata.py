@@ -24,16 +24,16 @@ def main():
         try:
             if key_dtype == "int":
                 col_dtypes[key] = "int"
+
             elif key_dtype == "float":
                 col_dtypes[key] = "float"
-            else:
-                col_dtypes[key] = "float"
+
         except:
             continue
 
-
+    print(col_dtypes)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     TDDIR = os.path.join(BASE_DIR,'iowaHomes/predict/predictModel/predictionModels/training_data/col_dtypes.sav')
     pickle.dump(col_dtypes, open(TDDIR, 'wb'))
-
+main()
 
