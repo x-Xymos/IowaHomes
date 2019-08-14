@@ -1,4 +1,3 @@
-
 body {
     font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
     font-size: 1.2rem;
@@ -19,10 +18,13 @@ body {
 
 .content {
   margin: 0 auto;
-  margin-top: 55px;
+  margin-top: 90px;
   margin-bottom: 25px;
   max-width: 1000px;
   width: 85%;
+  background-color: hsl(0, 0%, 91%);
+  border: 1.5px solid #bfbbb6;
+  border-radius: 5px;
 }
 
 #header {
@@ -36,6 +38,7 @@ body {
   z-index: 2;
   border: 2px solid #bfbbb6;
 
+
 }
 
 #header-img-div {
@@ -48,18 +51,16 @@ body {
 }
 
 
-#predict-form-outer
+#form-outer
 {
-    background-color: rgb(220, 220, 220);
-    border: 1px solid #bfbbb6;
-    border-radius: 6px;
-    margin: 10px auto 15px auto;
-    width: 100%;
 
+border-radius: 6px;
+margin: 10px auto 15px auto;
+width: 100%;
 }
 
 #footer-div {
-background-color: rgb(220, 220, 220);
+background-color: hsl(0, 0%, 91%);
 display: flex;
 justify-content: right;
 width: 100%;
@@ -120,6 +121,40 @@ a {
     width: 100%;
 }
 
+.search-home-box
+{
+}
+
+
+.search-home-img-container
+{
+    /*width: 200px; */
+    height: 200px;
+     /* overflow: hidden; */
+    margin: 10px 5px 0px 10px;
+    position: relative;
+
+}
+
+.search-home-img
+{
+
+    margin: auto;
+    max-height: 175px;
+    object-fit: cover;
+    border-radius: 6px;
+
+}
+
+.grid-container{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 0 3em 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+
+}
 
 .input-field{
   display: inline-block;
@@ -134,7 +169,7 @@ a {
 .range-amount-text
 {
     text-align:center;
-    background-color: rgb(220, 220, 220);
+    background-color: hsl(0, 0%, 91%);
 }
 
 .input-label{

@@ -149,8 +149,8 @@ elements = {
               {"value": "FR3", "text": "Frontage on 3 sides of property"},
 
           ],
-          "labelText": "Lot Config",
-          "tooltip": "Lot configuration"},
+          "labelText": "Lot Configuration",
+          "tooltip": ""},
 
     "LandSlope":
          {"name": "LandSlope",
@@ -211,7 +211,7 @@ elements = {
               {"value": "RRNn", "text": "Within 200' of North-South Railroad"},
               {"value": "RRAn", "text": "Adjacent to North-South Railroad"},
               {"value": "PosN", "text": "Near positive off-site feature--park, greenbelt, etc."},
-              {"value": "PosA", "text": "Adjacent to postive off-site feature"},
+              {"value": "PosA", "text": "Adjacent to positive off-site feature"},
               {"value": "RRNe", "text": "Within 200' of East-West Railroad"},
               {"value": "RRAe", "text": "Adjacent to East-West Railroad"},
           ],
@@ -229,7 +229,7 @@ elements = {
               {"value": "RRNn", "text": "Within 200' of North-South Railroad"},
               {"value": "RRAn", "text": "Adjacent to North-South Railroad"},
               {"value": "PosN", "text": "Near positive off-site feature--park, greenbelt, etc."},
-              {"value": "PosA", "text": "Adjacent to postive off-site feature"},
+              {"value": "PosA", "text": "Adjacent to positive off-site feature"},
               {"value": "RRNe", "text": "Within 200' of East-West Railroad"},
               {"value": "RRAe", "text": "Adjacent to East-West Railroad"},
           ],
@@ -248,8 +248,8 @@ elements = {
               {"value": "TwnhsI", "text": "Townhouse Inside Unit"},
 
           ],
-          "labelText": "Dwelling",
-          "tooltip": "Type of dwelling"},
+          "labelText": "Dwelling Type",
+          "tooltip": ""},
 
     "HouseStyle":
          {"name": "HouseStyle",
@@ -266,7 +266,7 @@ elements = {
               {"value": "SLvl", "text": "Split Level"},
           ],
           "labelText": "House Style",
-          "tooltip": "Style of dwelling"},
+          "tooltip": ""},
 
     "OverallQual":
          {"name": "OverallQual",
@@ -344,7 +344,7 @@ elements = {
 
           ],
           "labelText": "Roof Style",
-          "tooltip": "Type of roof"},
+          "tooltip": ""},
 
     "RoofMatl":
          {"name": "RoofMatl",
@@ -388,7 +388,7 @@ elements = {
               {"value": "WdShing", "text": "Wood Shingles"},
 
           ],
-          "labelText": "Exterior covering",
+          "labelText": "Exterior covering 1",
           "tooltip": "Exterior covering on house"},
 
     "Exterior2nd":
@@ -415,7 +415,7 @@ elements = {
               {"value": "WdShing", "text": "Wood Shingles"},
 
           ],
-          "labelText": "Exterior covering",
+          "labelText": "Exterior covering 2",
           "tooltip": "Exterior covering on house (if more than one material)"},
 
     "MasVnrType":
@@ -471,7 +471,7 @@ elements = {
               {"value": "Fa", "text": "Fair"},
               {"value": "Po", "text": "Poor"},
           ],
-          "labelText": "Exterior Quality",
+          "labelText": "Exterior Condition",
           "tooltip": "Evaluates the present condition of the material on the exterior"
           },
 
@@ -482,13 +482,13 @@ elements = {
               {"value": "", "text": ""},
               {"value": "BrkTil", "text": "Brick & Tile"},
               {"value": "CBlock", "text": "Cinder Block"},
-              {"value": "PConc", "text": "Poured Contrete"},
+              {"value": "PConc", "text": "Poured Concrete"},
               {"value": "Slab", "text": "Slab"},
               {"value": "Stone", "text": "Stone"},
               {"value": "Wood", "text": "Wood"},
           ],
-          "labelText": "Foundation",
-          "tooltip": "Type of foundation"
+          "labelText": "Foundation Type",
+          "tooltip": ""
           },
 
     "BsmtQual":
@@ -504,7 +504,7 @@ elements = {
               {"value": "NA", "text": "No Basement"},
           ],
           "labelText": "Basement Height",
-          "tooltip": "Evaluates the height of the basement"},
+          "tooltip": ""},
 
     "BsmtCond":
          {"name": "BsmtCond",
@@ -518,8 +518,8 @@ elements = {
               {"value": "Po", "text": "Poor - Severe cracking, settling, or wetness"},
               {"value": "NA", "text": "No Basement"},
           ],
-          "labelText": "Basement Height",
-          "tooltip": "Evaluates the general condition of the basement"},
+          "labelText": "Basement Condition",
+          "tooltip": ""},
 
     "BsmtExposure":
          {"name": "BsmtExposure",
@@ -528,7 +528,7 @@ elements = {
               {"value": "", "text": ""},
               {"value": "Gd", "text": "Good Exposure"},
               {"value": "Av", "text": "Average Exposure (split levels or foyers typically score average or above)"},
-              {"value": "Mn", "text": "Mimimum Exposure"},
+              {"value": "Mn", "text": "Minimum Exposure"},
               {"value": "No", "text": "No Exposure"},
               {"value": "NA", "text": "No Basement"},
           ],
@@ -545,7 +545,7 @@ elements = {
               {"value": "BLQ", "text": "Below Average Living Quarters"},
               {"value": "Rec", "text": "Average Rec Room"},
               {"value": "LwQ", "text": "Low Quality"},
-              {"value": "Unf", "text": "Unfinshed"},
+              {"value": "Unf", "text": "Unfinished"},
               {"value": "NA", "text": "No Basement"},
           ],
           "labelText": "Basement Finished Area Rating 1",
@@ -559,7 +559,7 @@ elements = {
           "step": '5',
           "value": '0',
           "unit": "sq. ft",
-          "labelText": "Finished Basment Area",
+          "labelText": "Finished Basement Area 1",
           "tooltip": "Type 1 finished square feet"
           },
 
@@ -573,7 +573,7 @@ elements = {
               {"value": "BLQ", "text": "Below Average Living Quarters"},
               {"value": "Rec", "text": "Average Rec Room"},
               {"value": "LwQ", "text": "Low Quality"},
-              {"value": "Unf", "text": "Unfinshed"},
+              {"value": "Unf", "text": "Unfinished"},
               {"value": "NA", "text": "No Basement"},
           ],
           "labelText": "Basement Finished Area Rating 2",
@@ -587,7 +587,7 @@ elements = {
           "step": '5',
           "value": '0',
           "unit": "sq. ft",
-          "labelText": "Finished Basment Area",
+          "labelText": "Finished Basement Area 2",
           "tooltip": "Type 2 finished square feet"
           },
 
@@ -599,7 +599,7 @@ elements = {
           "step": '5',
           "value": '0',
           "unit": "sq. ft",
-          "labelText": "Basment Unfinished Area",
+          "labelText": "Basement Unfinished Area",
           "tooltip": "Unfinished square feet of basement area"
           },
 
@@ -627,8 +627,8 @@ elements = {
               {"value": "OthW", "text": "Hot water or steam heat other than gas"},
               {"value": "Wall", "text": "Wall furnace"},
           ],
-          "labelText": "Heating Quality",
-          "tooltip": "Type of heating"},
+          "labelText": "Heating Type",
+          "tooltip": ""},
 
     "HeatingQC":
          {"name": "HeatingQC",
@@ -642,7 +642,7 @@ elements = {
               {"value": "Po", "text": "Poor"},
           ],
           "labelText": "Heating Quality",
-          "tooltip": "Heating quality and condition"},
+          "tooltip": ""},
 
     "CentralAir":
          {"name": "CentralAir",
@@ -652,8 +652,8 @@ elements = {
               {"value": "Y", "text": "Yes"},
               {"value": "N", "text": "No"},
           ],
-          "labelText": "Central Air",
-          "tooltip": "Central air conditioning"},
+          "labelText": "Central Air Conditioning",
+          "tooltip": ""},
 
     "Electrical":
          {"name": "Electrical",
@@ -666,8 +666,8 @@ elements = {
               {"value": "FuseP", "text": "60 AMP Fuse Box and mostly knob & tube wiring (poor)"},
               {"value": "Mix", "text": "Mixed"},
           ],
-          "labelText": "Heating quality",
-          "tooltip": "Electrical system"},
+          "labelText": "Electrical system",
+          "tooltip": ""},
 
     "1stFlrSF":
          {"name": "1stFlrSF",
@@ -726,7 +726,7 @@ elements = {
           "value": '0',
           "unit": "",
           "labelText": "Basement Full Bathrooms",
-          "tooltip": "Amount of full basement bathrooms"
+          "tooltip": ""
           },
 
     "BsmtHalfBath":
@@ -750,7 +750,7 @@ elements = {
           "value": '0',
           "unit": "",
           "labelText": "Full Bathrooms",
-          "tooltip": "Full bathrooms above grade"
+          "tooltip": ""
           },
 
     "HalfBath":
@@ -762,7 +762,7 @@ elements = {
           "value": '0',
           "unit": "",
           "labelText": "Half Bathrooms",
-          "tooltip": "Half bathrooms above grade"
+          "tooltip": ""
           },
 
     "BedroomAbvGr":
@@ -786,7 +786,7 @@ elements = {
           "value": '0',
           "unit": "",
           "labelText": "Kitchens",
-          "tooltip": "Kitchens above grade"
+          "tooltip": ""
           },
 
     "KitchenQual":
@@ -801,7 +801,7 @@ elements = {
               {"value": "Po", "text": "Poor"},
           ],
           "labelText": "Kitchen Quality",
-          "tooltip": "Kitchen quality rating"},
+          "tooltip": ""},
 
     "TotRmsAbvGrd":
          {"name": "TotRmsAbvGrd",
@@ -841,7 +841,7 @@ elements = {
           "value": '0',
           "unit": "",
           "labelText": "Fireplaces",
-          "tooltip": "Number of fireplaces"
+          "tooltip": ""
           },
 
     "FireplaceQu":
@@ -858,7 +858,7 @@ elements = {
               {"value": "NA", "text": "No Fireplace"},
           ],
           "labelText": "Fireplace Quality",
-          "tooltip": "Fireplace Quality Rating"},
+          "tooltip": ""},
 
     "GarageType":
          {"name": "GarageType",
@@ -874,7 +874,7 @@ elements = {
               {"value": "NA", "text": "No Garage"},
           ],
           "labelText": "Garage Type",
-          "tooltip": "Garage location"},
+          "tooltip": ""},
 
     "GarageYrBlt":
          {"name": "GarageYrBlt",
@@ -885,7 +885,7 @@ elements = {
           "value": str(datetime.datetime.today().year),
           "unit": "",
           "labelText": "Garage Year Built",
-          "tooltip": "Year garage was built"
+          "tooltip": ""
           },
 
     "GarageFinish":
@@ -899,8 +899,8 @@ elements = {
               {"value": "NA", "text": "No Garage)"},
 
           ],
-          "labelText": "Garage Finish",
-          "tooltip": "Interior finish of the garage"},
+          "labelText": "Garage Interior Finish",
+          "tooltip": ""},
 
     "GarageCars":
          {"name": "GarageCars",

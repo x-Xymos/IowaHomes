@@ -22,66 +22,63 @@
                   } );
             </script>
         </head>
-        <div class="content">
+        {% if prediction %}
+        <h2>Estimated House Value:  ${{prediction}}</h2>
+        {% else %}
+        <h2>Please fill out and submit the form to receive an estimate</h2>
+        {% endif %}
 
-            {% if prediction %}
-            <h2>Estimated House Value:  ${{prediction}}</h2>
-            {% else %}
-            <h2>Please fill out and submit the form to receive an estimate</h2>
-            {% endif %}
-
-            <div id="predict-form-outer">
-                <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
-                <form id="predict-input-form" action="{% url 'predict:estimate' %}" method="post">
-                {% csrf_token %}
-                    {% for elem in target_elements %}
-                        {% if elem.type == "slider" %}
-                            <div class="rowTab">
-                                <script>
-                                    $( function() {
-                                        $("#hidden{{elem.name}}").val({{elem.value}});
-                                        $( "#slider{{elem.name}}" ).slider({
-                                        value:{{elem.value}},
-                                        min: {{elem.min}},
-                                        max: {{elem.max}},
-                                        step: {{elem.step}},
-                                        slide: function( event, ui ) {
-                                            $("#amount{{elem.name}}" ).val(ui.value + " {{elem.unit}}");
-                                            $("#hidden{{elem.name}}").val(ui.value);
-                                            }
-                                    });
-                                        $( "#amount{{elem.name}}" ).val( $("#slider{{elem.name}}" ).slider( "value" ) );
-                                    } );
-                                </script>
+        <div id="form-outer">
+            <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
+            <form id="input-form" action="{% url 'predict:estimate' %}" method="post">
+            {% csrf_token %}
+                {% for elem in target_elements %}
+                    {% if elem.type == "slider" %}
+                        <div class="rowTab">
+                            <script>
+                                $( function() {
+                                    $("#hidden{{elem.name}}").val({{elem.value}});
+                                    $( "#slider{{elem.name}}" ).slider({
+                                    value:{{elem.value}},
+                                    min: {{elem.min}},
+                                    max: {{elem.max}},
+                                    step: {{elem.step}},
+                                    slide: function( event, ui ) {
+                                        $("#amount{{elem.name}}" ).val(ui.value + " {{elem.unit}}");
+                                        $("#hidden{{elem.name}}").val(ui.value);
+                                        }
+                                });
+                                    $( "#amount{{elem.name}}" ).val( $("#slider{{elem.name}}" ).slider( "value" ) );
+                                } );
+                            </script>
+                        <div class="input-label">
+                            <label class="rangeLabel" for="amount{{elem.name}}">{{elem.labelText}}</label>
+                        </div>
+                            <div class="input-field" title="{{elem.tooltip}}">
+                                <div class="tooltip-box" title="{{elem.tooltip}}"></div>
+                                <div class="range-slider" id="slider{{elem.name}}"></div>
+                                <input class="range-amount-text" type="text" id="amount{{elem.name}}" readonly style="border:0; font-weight:bold;">
+                                <input type="hidden" name="{{elem.name}}" id="hidden{{elem.name}}" value="">
+                            </div>
+                        </div>
+                    {% elif elem.type == "dropdown" %}
+                        <div class="rowTab">
                             <div class="input-label">
-                                <label class="rangeLabel" for="amount{{elem.name}}">{{elem.labelText}}</label>
+                                <label id="{{elem.name}}-label" for="{{elem.name}}">{{elem.labelText}}</label>
                             </div>
-                                <div class="input-field" title="{{elem.tooltip}}">
-                                    <div class="tooltip-box" title="{{elem.tooltip}}"></div>
-                                    <div class="range-slider" id="slider{{elem.name}}"></div>
-                                    <input class="range-amount-text" type="text" id="amount{{elem.name}}" readonly style="border:0; font-weight:bold;">
-                                    <input type="hidden" name="{{elem.name}}" id="hidden{{elem.name}}" value="">
-                                </div>
+                            <div class="input-field" title="{{menu.tooltip}}">
+                                <div class="tooltip-box" title="{{elem.tooltip}}"></div>
+                                <select class="input-dropdown" id={{elem.name}} name="{{elem.name}}">
+                                    {% for field in elem.fields %}
+                                    <option value="{{field.value}}">{{field.text}}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
-                        {% elif elem.type == "dropdown" %}
-                            <div class="rowTab">
-                                <div class="input-label">
-                                    <label id="{{elem.name}}-label" for="{{elem.name}}">{{elem.labelText}}</label>
-                                </div>
-                                <div class="input-field" title="{{menu.tooltip}}">
-                                    <div class="tooltip-box" title="{{elem.tooltip}}"></div>
-                                    <select class="input-dropdown" id={{elem.name}} name="{{elem.name}}">
-                                        {% for field in elem.fields %}
-                                        <option value="{{field.value}}">{{field.text}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        {% endif %}
+                        </div>
+                    {% endif %}
 
-                    {% endfor %}
-                    <input type="submit" value="Submit">
-                </form>
-            </div>
+                {% endfor %}
+                <input type="submit" value="Submit">
+            </form>
         </div>
     {% endblock %}

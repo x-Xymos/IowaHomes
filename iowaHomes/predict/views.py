@@ -1,6 +1,8 @@
 from django.views import generic
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import datetime, os, sys, pickle
+from django.contrib.auth.hashers import make_password, check_password
+from .models import HouseListings
 
 PROJECT_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(PROJECT_DIR, "predictModel/"))
@@ -19,16 +21,10 @@ class IndexView(generic.ListView):
 
 class BrowseView(generic.ListView):
     template_name = 'predict/browseHomes.html'
+    context_object_name = 'homes'
 
     def get_queryset(self):
-        return 'predict/browseHomes.html'
-
-
-class LoginView(generic.ListView):
-    template_name = 'predict/login.html'
-
-    def get_queryset(self):
-        return 'predict/login.html'
+        return HouseListings.objects.all()[:5]
 
 
 def EstimateView(request):
@@ -46,7 +42,6 @@ def EstimateView(request):
     """
 
     from feature_element_def import elements
-
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     FOPATH = os.path.join(BASE_DIR, 'predict/predictModel/predictionModels/training_data/featureOrder.sav')

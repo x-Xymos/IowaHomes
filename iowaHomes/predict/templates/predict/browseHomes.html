@@ -1,4 +1,21 @@
 {% extends "predict/layout.html" %}
     {% block content %}
         <h1>Browse Homes</h1>
+        {% load static %}
+        <div class="grid-container">
+
+        {% for home in homes %}
+             <div class="search-home-box">
+                <div class="search-home-img-container">
+                  <a href="/predict/">
+                    <img class="search-home-img" src="/{{ home.image }}" alt="" width='240' height='310'>
+                  </a>
+                </div>
+                <label>{{ home.address }}</label>
+             </div>
+        {% endfor %}
+
+
+
+        </div>
     {% endblock %}
