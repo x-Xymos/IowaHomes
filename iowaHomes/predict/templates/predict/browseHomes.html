@@ -7,11 +7,12 @@
         {% for home in homes %}
              <div class="search-home-box">
                 <div class="search-home-img-container">
-                  <a href="/predict/">
+                  <a href="/predict/browse/{{home.id}}/">
                     <img class="search-home-img" src="/{{ home.image }}" alt="">
                   </a>
                 </div>
                 <label>{{ home.address }}</label>
+                <label>${{ home.SalePrice }}</label>
              </div>
         {% endfor %}
 

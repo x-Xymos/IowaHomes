@@ -22,9 +22,17 @@ class IndexView(generic.ListView):
 class BrowseView(generic.ListView):
     template_name = 'predict/browseHomes.html'
     context_object_name = 'homes'
+    model = HouseListings
 
     def get_queryset(self):
         return HouseListings.objects.all()[:5]
+
+
+class DetailView(generic.DetailView):
+    template_name = 'predict/detailView.html'
+    context_object_name = 'home'
+    model = HouseListings
+
 
 
 def EstimateView(request):

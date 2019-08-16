@@ -127,6 +127,7 @@ a {
 
 .search-home-box
 {
+    margin: 10px 0px 10px 0px;
 }
 
 
@@ -138,6 +139,29 @@ a {
     margin: 10px 25px 0px 25px;
     position: relative;
 
+}
+.detail-home-img
+{
+    width: 90%;
+    max-width: 40%;
+}
+
+.detail-home-info{
+     width: 50%;
+     text-align: left;
+}
+
+.detail-home-info-container{
+     width: 50%;
+     margin-left: 15px;
+}
+
+.detail-home-container{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 0 3em 0;
+    padding: 0;
+    justify-content: center;
 }
 
 .search-home-img
@@ -196,7 +220,7 @@ a {
 }
 
 
-@media (max-width: 450px){
+@media (max-width: 750px){
     .rowTab{
       margin-bottom: 15px;
       text-align: center;
@@ -224,16 +248,26 @@ a {
 
     #header-img-div{
         transform: scale(0.75);
-        position: absolute;
-        left: -65px;
+        position: relative;
+        left: -70px;
     }
-    #nav-bar{
-        position: absolute;
-        left: 200px;
+    .nav-list{
+     position: relative;
+        left: -15px;
     }
 
     .content {
       width: 95%;
+    }
+
+    a{
+    margin: 0px 5px 0px 5px;
+    }
+
+    .detail-home-info-container{
+
+        flex-direction: column;
+
     }
 
 }

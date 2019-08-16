@@ -1,0 +1,28 @@
+{% extends "predict/layout.html" %}
+    {% block content %}
+        {% load static %}
+
+        <h1>Home Detail Page</h1>
+        <div class="detail-home-container">
+            <img class="detail-home-img" src="/{{ home.image }}" alt="">
+
+            <div class="detail-home-info-container">
+
+
+                <div class="detail-home-info">
+                    <h4>Sale Price: ${{ home.SalePrice }}</h4>
+                </div>
+
+                <div class="detail-home-info">
+                    <h4>Address: {{ home.address }}</h4>
+                </div>
+
+                <div class="detail-home-info">
+                    <h4>Bedrooms: {{ home.Bedroom }}</h4>
+                </div>
+
+
+            </div>
+        </div>
+
+    {% endblock %}
