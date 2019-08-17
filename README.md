@@ -64,7 +64,7 @@ then run
 ## Opening the application
 After the server is ran, we can acess the application through the website
 ```
-http://0.0.0.0:8000/predict/estimate/
+http://0.0.0.0:8000/predict/
 ```
 
 ## Running the tests
