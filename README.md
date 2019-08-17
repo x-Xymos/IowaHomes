@@ -42,7 +42,7 @@ cd IowaHomes/
 if not already, make the main scripts executable
 
 ```
-sudo chmod +x setup run_server kill_server
+sudo chmod +x setup run_server kill_server setup
 ```
 run the setup script to create the python virtual environment and install the required dependencies
 ```
