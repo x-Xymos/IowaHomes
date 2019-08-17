@@ -1,5 +1,6 @@
 from django.views import generic
 from django.shortcuts import render, redirect
+import random
 import datetime, os, sys, pickle
 from django.contrib.auth.hashers import make_password, check_password
 from .models import HouseListings
@@ -13,10 +14,14 @@ from main import engineered_features
 
 
 class IndexView(generic.ListView):
+
     template_name = 'predict/index.html'
+    context_object_name = 'home'
+    model = HouseListings
 
     def get_queryset(self):
-        return 'predict/index.html'
+        return HouseListings.objects.all()[random.randint(0, 5)]
+
 
 
 class BrowseView(generic.ListView):
@@ -25,7 +30,7 @@ class BrowseView(generic.ListView):
     model = HouseListings
 
     def get_queryset(self):
-        return HouseListings.objects.all()[:5]
+        return HouseListings.objects.all()
 
 
 class DetailView(generic.DetailView):

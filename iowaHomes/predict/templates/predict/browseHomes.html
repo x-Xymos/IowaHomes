@@ -1,22 +1,18 @@
 {% extends "predict/layout.html" %}
     {% block content %}
-        <h1>Browse Homes</h1>
+        <h2><i class="fas fa-clipboard-list" style="font-size:22px"></i> Browse Homes</h2>
         {% load static %}
         <div class="grid-container">
 
-        {% for home in homes %}
-             <div class="search-home-box">
-                <div class="search-home-img-container">
-                  <a href="/predict/browse/{{home.id}}/">
-                    <img class="search-home-img" src="/{{ home.image }}" alt="">
-                  </a>
-                </div>
-                <label>{{ home.address }}</label>
-                <label>${{ home.SalePrice }}</label>
-             </div>
-        {% endfor %}
-
-
-
+            {% for home in homes %}
+                 <div class="search-home-box">
+                    <div class="search-home-img-container">
+                      <a href="/predict/browse/{{home.id}}/">
+                        <img class="search-home-img" src="/{{ home.image }}" alt="">
+                      </a>
+                    </div>
+                    <label><i class="fas fa-map-marker-alt"></i> {{ home.address }}</label>
+                 </div>
+            {% endfor %}
         </div>
     {% endblock %}

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import datetime
 
 
 class HouseListings(models.Model):
@@ -19,7 +19,8 @@ class HouseListings(models.Model):
     def __str__(self):
         return 'HouseListing: ' + str(self.id)
 
-
+    def strip_time_from_date(self):
+        return self.pub_date.strftime('%d/%m/%Y')
 
 
 

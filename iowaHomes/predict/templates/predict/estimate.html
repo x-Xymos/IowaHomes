@@ -23,13 +23,15 @@
             </script>
         </head>
         {% if prediction %}
-        <h2>Estimated House Value:  ${{prediction}}</h2>
+        <h2><i class="fas fa-chart-bar" style="font-size:22px"></i> Estimated House Value:  ${{prediction}}</h2>
         {% else %}
-        <h2>Please fill out and submit the form to receive an estimate</h2>
+        <h2><i class="fas fa-chart-bar" style="font-size:22px"></i> Estimate Home Price</h2>
         {% endif %}
 
         <div id="form-outer">
-            <p id="description">Note: please try and fill as many fields as you can to get a more accurate estimate.</p>
+            <p id="description">Please fill out and submit the form to receive an estimate</p>
+            <p> Note: Try and fill as many fields as you can to get a more accurate estimate.</p>
+            <br>
             <form id="input-form" action="{% url 'predict:estimate' %}" method="post">
             {% csrf_token %}
                 {% for elem in target_elements %}
@@ -78,7 +80,7 @@
                     {% endif %}
 
                 {% endfor %}
-                <input type="submit" value="Submit">
+                <button type="submit" value="Submit"><i class="fas fa-angle-right"></i></i> Submit</button>
             </form>
         </div>
     {% endblock %}
