@@ -386,6 +386,9 @@ def run_prediction(models, user_input_, load_models=True):
         #checking user input data and removing null values
         if user_input_[key] == "":
             user_input_.pop(key)
+        elif user_input_[key] == "-1":
+            user_input_.pop(key)
+
 
     if len(user_input_) == 0:
         #if user_input is empty return

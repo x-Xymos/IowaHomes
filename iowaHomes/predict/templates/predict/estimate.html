@@ -23,7 +23,7 @@
             </script>
         </head>
         {% if prediction %}
-        <h2><i class="fas fa-chart-bar" style="font-size:22px"></i> Estimated House Value:  ${{prediction}}</h2>
+        <h2><i class="fas fa-chart-bar" style="font-size:22px"></i> Estimated Home Price:  ${{prediction}}</h2>
         {% else %}
         <h2><i class="fas fa-chart-bar" style="font-size:22px"></i> Estimate Home Price</h2>
         {% endif %}
@@ -41,7 +41,7 @@
                                 $( function() {
                                     $("#hidden{{elem.name}}").val({{elem.value}});
                                     $( "#slider{{elem.name}}" ).slider({
-                                    value:{{elem.value}},
+                                    value:{{elem.max}},
                                     min: {{elem.min}},
                                     max: {{elem.max}},
                                     step: {{elem.step}},

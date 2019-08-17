@@ -1,6 +1,7 @@
 import datetime
 
-#this just holds the dictionary of all the features and their possible values
+#this just holds the dictionary of all the features and their values
+#for sliders we use the default value of -1 for null
 elements = {
 
     "MSSubClass":
@@ -52,7 +53,7 @@ elements = {
           "min": '10',
           "max": '350',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Lot Frontage",
           "tooltip": "Linear feet of street connected to property"
@@ -64,7 +65,7 @@ elements = {
           "min": '0',
           "max": '40000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Lot Area",
           "tooltip": "Lot size in square feet"
@@ -310,9 +311,9 @@ elements = {
          {"name": "YearBuilt",
           "type": "slider",
           "min": '1870',
-          "max": str(datetime.datetime.today().year),
+          "max": str(datetime.datetime.today().year + 1),
           "step": '1',
-          "value": str(datetime.datetime.today().year),
+          "value": "-1",
           "unit": "",
           "labelText": "Year Built",
           "tooltip": "Original construction date"
@@ -322,9 +323,9 @@ elements = {
          {"name": "YearRemodAdd",
           "type": "slider",
           "min": '1870',
-          "max": str(datetime.datetime.today().year),
+          "max": str(datetime.datetime.today().year + 1),
           "step": '1',
-          "value": str(datetime.datetime.today().year),
+          "value": "-1",
           "unit": "",
           "labelText": "Remodel/Addition Year",
           "tooltip": "Remodel date (same as construction date if no remodeling or additions)"
@@ -439,7 +440,7 @@ elements = {
           "min": '0',
           "max": '5000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Masonry Area",
           "tooltip": " Masonry veneer area in square feet"
@@ -557,7 +558,7 @@ elements = {
           "min": '0',
           "max": '2000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Finished Basement Area 1",
           "tooltip": "Type 1 finished square feet"
@@ -585,7 +586,7 @@ elements = {
           "min": '0',
           "max": '2000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Finished Basement Area 2",
           "tooltip": "Type 2 finished square feet"
@@ -597,7 +598,7 @@ elements = {
           "min": '0',
           "max": '2500',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Basement Unfinished Area",
           "tooltip": "Unfinished square feet of basement area"
@@ -609,7 +610,7 @@ elements = {
           "min": '0',
           "max": '8000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Basement Area",
           "tooltip": "Total square feet of basement area"
@@ -675,7 +676,7 @@ elements = {
           "min": '0',
           "max": '3500',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "First Floor Area",
           "tooltip": "First Floor area in square feet"
@@ -687,7 +688,7 @@ elements = {
           "min": '0',
           "max": '2000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Second Floor Area",
           "tooltip": "Second Floor area in square feet"
@@ -699,7 +700,7 @@ elements = {
           "min": '0',
           "max": '600',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Low Quality Finish Area",
           "tooltip": " Low quality finished square feet (all floors)"
@@ -711,7 +712,7 @@ elements = {
           "min": '0',
           "max": '3700',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Above Grade Area",
           "tooltip": "Above grade (ground) living area square feet"
@@ -723,7 +724,7 @@ elements = {
           "min": '0',
           "max": '10',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Basement Full Bathrooms",
           "tooltip": ""
@@ -735,7 +736,7 @@ elements = {
           "min": '0',
           "max": '5',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Basement Half Bathrooms",
           "tooltip": ""
@@ -747,7 +748,7 @@ elements = {
           "min": '0',
           "max": '5',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Full Bathrooms",
           "tooltip": ""
@@ -759,7 +760,7 @@ elements = {
           "min": '0',
           "max": '5',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Half Bathrooms",
           "tooltip": ""
@@ -771,7 +772,7 @@ elements = {
           "min": '0',
           "max": '10',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Bedrooms",
           "tooltip": "Bedrooms above grade (does NOT include basement bedrooms)"
@@ -783,7 +784,7 @@ elements = {
           "min": '0',
           "max": '5',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Kitchens",
           "tooltip": ""
@@ -809,7 +810,7 @@ elements = {
           "min": '0',
           "max": '20',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Total Rooms",
           "tooltip": "Total rooms above grade (does not include bathrooms)"
@@ -838,7 +839,7 @@ elements = {
           "min": '0',
           "max": '15',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Fireplaces",
           "tooltip": ""
@@ -882,7 +883,7 @@ elements = {
           "min": '1870',
           "max": str(datetime.datetime.today().year),
           "step": '1',
-          "value": str(datetime.datetime.today().year),
+          "value": "-1",
           "unit": "",
           "labelText": "Garage Year Built",
           "tooltip": ""
@@ -908,7 +909,7 @@ elements = {
           "min": '0',
           "max": '15',
           "step": '1',
-          "value": '0',
+          "value": '-1',
           "unit": "",
           "labelText": "Garage Capacity",
           "tooltip": "Size of garage in car capacity"
@@ -920,7 +921,7 @@ elements = {
           "min": '0',
           "max": '3000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Garage Area",
           "tooltip": "Size of garage in square feet"
@@ -974,7 +975,7 @@ elements = {
           "min": '0',
           "max": '2000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Wood Deck Area",
           "tooltip": "Wood deck area in square feet"
@@ -986,7 +987,7 @@ elements = {
           "min": '0',
           "max": '1250',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Open Porch Area",
           "tooltip": "Open porch area in square feet"
@@ -998,7 +999,7 @@ elements = {
           "min": '0',
           "max": '1000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Enclosed porch area",
           "tooltip": "Enclosed porch area in square feet"
@@ -1010,7 +1011,7 @@ elements = {
           "min": '0',
           "max": '1000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Three season porch area",
           "tooltip": "Three season porch area in square feet"
@@ -1022,7 +1023,7 @@ elements = {
           "min": '0',
           "max": '1000',
           "step": '5',
-          "value": '0',
+          "value": '-1',
           "unit": "sq. ft",
           "labelText": "Screen porch area",
           "tooltip": "Screen porch area in square feet"
