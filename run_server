@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python3 "$(pwd)/iowaHomes/manage.py" runserver 0.0.0.0:8000
+"$(pwd)/iowaHomes/venv/bin/"python3 "$(pwd)/iowaHomes/manage.py" runserver 0.0.0.0:8000
 
